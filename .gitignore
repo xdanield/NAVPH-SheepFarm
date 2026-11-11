@@ -83,3 +83,7 @@ crashlytics-build.properties
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Game design document
+NAVPH-GDD-*.pdf
+__pycache__/
