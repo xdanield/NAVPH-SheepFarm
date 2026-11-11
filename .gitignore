@@ -86,3 +86,4 @@ Desktop.ini
 
 # Game design document
 NAVPH-GDD-*.pdf
+__pycache__/
