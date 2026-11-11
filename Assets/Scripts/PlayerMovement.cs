@@ -9,12 +9,14 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private InputAction moveAction;
     private Vector2 moveInput;
+    private Animator animator;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         moveAction = InputSystem.actions.FindAction("Move");
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -25,6 +27,9 @@ public class PlayerMovement : MonoBehaviour
         {
             spriteRenderer.flipX = moveInput.x < 0f;
         }
+
+        bool isMoving = moveInput != Vector2.zero;
+        animator.SetBool("IsMoving", isMoving);
     }
 
     void FixedUpdate()
