@@ -2041,6 +2041,36 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3924748660268967392, guid: 79f4e95dd4c81c34ea880dbab81ab346, type: 3}
   m_PrefabInstance: {fileID: 2141662956}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &417504512 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
+  m_PrefabInstance: {fileID: 737625313}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &417504519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417504512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18550ce763896bb4b89b352d67c7a6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+--- !u!114 &417504520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417504512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08989f104d13ef94e98b56c05fb4018d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 4
 --- !u!4 &425429890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7528979414436488674, guid: ef437b683f5b12c45b0e3b969c8a0d11, type: 3}
@@ -2620,6 +2650,40 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7528979414436488674, guid: ef437b683f5b12c45b0e3b969c8a0d11, type: 3}
   m_PrefabInstance: {fileID: 1328383479}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &612131976 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+  m_PrefabInstance: {fileID: 1486752748968821705}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &612131981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 612131976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08989f104d13ef94e98b56c05fb4018d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
+--- !u!114 &612131982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 612131976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 239607efa75912f448daa229d0c4005f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAttack
+  buildingDamage: 10
+  playerDamage: 1
+  range: 0.8
+  cooldown: 1.5
 --- !u!4 &624159551 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 13831644860491200, guid: b12943395ad90734d91f7a9bc8825734, type: 3}
@@ -3248,10 +3312,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 417504520}
+    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 417504519}
   m_SourcePrefab: {fileID: 100100000, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
 --- !u!1001 &739372978
 PrefabInstance:
@@ -35162,6 +35236,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zombie Sheep
       objectReference: {fileID: 0}
+    - target: {fileID: 6431272298626610446, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -35705,6 +35783,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zombie
       objectReference: {fileID: 0}
+    - target: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 4069471455186630519, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.5
@@ -35748,7 +35830,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 612131981}
+    - targetCorrespondingSourceObject: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 612131982}
   m_SourcePrefab: {fileID: 100100000, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
 --- !u!1001 &8008156035666757273
 PrefabInstance:
