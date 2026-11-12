@@ -9,7 +9,7 @@ public class SheepMovement : MonoBehaviour
     [SerializeField] private float collisionStunDuration = 0.5f;
 
     [SerializeField] private float minSoundDelay = 5f;
-    [SerializeField] private float maxSoundDelay = 10f;
+    [SerializeField] private float maxSoundDelay = 60f;
     private float soundTimer;
 
     private Rigidbody2D rb;
@@ -28,6 +28,13 @@ public class SheepMovement : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+
+        float randomVolume = Random.Range(0.1f, 0.4f);
+        float randomPitch = Random.Range(0.8f, 1.15f);
+        bool mute = Random.value < 0.25f;
+
+        audioSource.volume = mute ? 0f : randomVolume;
+        audioSource.pitch = randomPitch;
         
         PickRandomDirection();
         directionChangeTimer = directionChangeInterval;
