@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3113908333363063783}
   - component: {fileID: 1098514853108525890}
   - component: {fileID: 5599194485952539450}
-  - component: {fileID: 7055249522675692363}
   - component: {fileID: 3040561594534176791}
   m_Layer: 0
   m_Name: Player
@@ -170,19 +169,6 @@ BoxCollider2D:
   m_Size: {x: 0.65, y: 0.19}
   m_EdgeRadius: 0
 --- !u!114 &5599194485952539450
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7841681221009350379}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e579db5168d8eb4da97091a8f409088, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  speed: 5
---- !u!114 &7055249522675692363
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
