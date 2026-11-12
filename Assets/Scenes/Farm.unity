@@ -7019,8 +7019,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8db715dd1084394888eda00bbc6074a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayNightCycle
-  dayLength: 10
-  nightLength: 5
+  dayLength: 60
+  nightLength: 30
 --- !u!4 &1479441209
 Transform:
   m_ObjectHideFlags: 0
