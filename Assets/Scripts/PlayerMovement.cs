@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private InputAction moveAction;
     private Vector2 moveInput;
     private Animator animator;
+    public Vector2 facingDirection = Vector2.down;
 
     void Start()
     {
@@ -22,6 +23,11 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         moveInput = moveAction.ReadValue<Vector2>();
+
+        if (moveInput != Vector2.zero)
+        {
+            facingDirection = moveInput.normalized;
+        }
 
         if (moveInput.x != 0f)
         {
