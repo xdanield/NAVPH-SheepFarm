@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a65b09e6a7651a49817a3910d61247c, type: 3}
+  m_Name: Fiber
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  displayName: Fiber
+  description: Gathered from tall grass.
+  icon: {fileID: 21300000, guid: 311755a0d33712b4db54f6b9f3a01143, type: 3}
+  maxStack: 99

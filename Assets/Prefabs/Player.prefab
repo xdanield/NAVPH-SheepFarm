@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 5599194485952539450}
   - component: {fileID: 7055249522675692363}
   - component: {fileID: 3040561594534176791}
+  - component: {fileID: 7079667775838529675}
+  - component: {fileID: 4732399045582120879}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -95,7 +97,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!50 &3113908333363063783
 Rigidbody2D:
   serializedVersion: 5
@@ -217,3 +219,49 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7079667775838529675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c054cbf5897ca7d41a75f84626f5f037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Inventory
+  hotbarSize: 6
+  bagRows: 1
+  startingItems:
+  - item: {fileID: 11400000, guid: 4b1b7f8d11817cc42b70b118c07c759c, type: 2}
+    count: 12
+  - item: {fileID: 11400000, guid: 7ea55bbcf1a7eec4d93ffdba16071adf, type: 2}
+    count: 6
+  - item: {fileID: 11400000, guid: ff3b1c2b90ea2744086eccb6b1e42077, type: 2}
+    count: 4
+  - item: {fileID: 11400000, guid: 131522926358c3641bbd2416d983c1fc, type: 2}
+    count: 3
+--- !u!114 &4732399045582120879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63fa18c232a68ac40a7f648c8f466bdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
+  slotSize: 24
+  slotGap: 2
+  iconSize: 18
+  padding: 5
+  hotbarBottomMargin: 6
+  panelColor: {r: 0.11372549, g: 0.101960786, b: 0.14117648, a: 0.9411765}
+  panelBorderColor: {r: 0.3529412, g: 0.30588236, b: 0.41960785, a: 1}
+  slotColor: {r: 0.16862746, g: 0.14901961, b: 0.20784314, a: 0.9019608}
+  slotHoverColor: {r: 0.27058825, g: 0.23921569, b: 0.33333334, a: 0.9411765}
+  slotBorderColor: {r: 0.2901961, g: 0.25882354, b: 0.34509805, a: 1}
+  selectedBorderColor: {r: 0.9490196, g: 0.75686276, b: 0.30588236, a: 1}
