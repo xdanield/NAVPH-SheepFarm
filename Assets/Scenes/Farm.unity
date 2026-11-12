@@ -2252,6 +2252,33 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3924748660268967392, guid: 79f4e95dd4c81c34ea880dbab81ab346, type: 3}
   m_PrefabInstance: {fileID: 1423967064}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &559923395 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6431272298626610446, guid: dc883ca456a5fe34594637245da70fbe, type: 3}
+  m_PrefabInstance: {fileID: 686981886412239677}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &559923400
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559923395}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c08474f6a00521446ac62065360cf487, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &560379894
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6064,7 +6091,7 @@ GameObject:
   - component: {fileID: 1328273021}
   m_Layer: 0
   m_Name: Pen
-  m_TagString: Untagged
+  m_TagString: PenFence
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35148,7 +35175,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6431272298626610446, guid: dc883ca456a5fe34594637245da70fbe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 559923400}
   m_SourcePrefab: {fileID: 100100000, guid: dc883ca456a5fe34594637245da70fbe, type: 3}
 --- !u!1001 &1486752748968821705
 PrefabInstance:
