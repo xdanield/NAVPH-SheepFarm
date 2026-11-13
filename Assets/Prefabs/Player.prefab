@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1098514853108525890}
   - component: {fileID: 5599194485952539450}
   - component: {fileID: 3040561594534176791}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -181,6 +181,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   speed: 5
+  facingDirection: {x: 0, y: -1}
 --- !u!95 &3040561594534176791
 Animator:
   serializedVersion: 7
