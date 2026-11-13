@@ -12,7 +12,10 @@ GameObject:
   - component: {fileID: 1205006129476389530}
   - component: {fileID: 5675251489159043977}
   - component: {fileID: 1766138499663540872}
-  m_Layer: 0
+  - component: {fileID: 2641758029891247606}
+  - component: {fileID: 8460520640237278876}
+  - component: {fileID: 4554804349430434769}
+  m_Layer: 6
   m_Name: Zombie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -33,6 +36,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 919819383689800631}
+  - {fileID: 5588651945923405684}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1205006129476389530
@@ -107,7 +111,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 100
-  m_LinearDamping: 3
+  m_LinearDamping: 5
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -167,6 +171,47 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.88377494, y: 0.42855835}
   m_EdgeRadius: 0
+--- !u!114 &2641758029891247606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663308612698045302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08989f104d13ef94e98b56c05fb4018d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
+--- !u!114 &8460520640237278876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663308612698045302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 239607efa75912f448daa229d0c4005f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAttack
+  buildingDamage: 10
+  playerDamage: 1
+  range: 0.8
+  cooldown: 1.5
+--- !u!114 &4554804349430434769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663308612698045302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 569c0523ae27c584a8be8048e5a78a71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DestroyOnDeath
 --- !u!1 &7013864381594401960
 GameObject:
   m_ObjectHideFlags: 0
@@ -177,7 +222,7 @@ GameObject:
   m_Component:
   - component: {fileID: 919819383689800631}
   - component: {fileID: 8863911999246645357}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hurtbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -245,3 +290,65 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.95410955, y: 1.872654}
   m_EdgeRadius: 0
+--- !u!1001 &5855255609075187954
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4069471455186630519}
+    m_Modifications:
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4945972537044838353, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+      propertyPath: m_Name
+      value: HealthBarDisplay
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+--- !u!4 &5588651945923405684 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
+  m_PrefabInstance: {fileID: 5855255609075187954}
+  m_PrefabAsset: {fileID: 0}

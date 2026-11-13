@@ -26,8 +26,6 @@ public class Health : MonoBehaviour
         if (CurrentHealth < 0)
             CurrentHealth = 0;
 
-        Debug.Log($"{name} took {damage} damage, HP {CurrentHealth}/{maxHealth}");//only for debug, remove later
-
         Damaged?.Invoke(CurrentHealth);
         if (IsDead) Died?.Invoke();
     }
