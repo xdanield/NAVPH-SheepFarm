@@ -2071,6 +2071,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 4
+--- !u!114 &417504521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417504512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a96a1ecb3a7f48468584914705c04c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
+  damage: 10
+  cooldown: 2
+  attackRadius: 0.4
+  attackDistance: 0.5
+  attackHeight: 0.6
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!4 &425429890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7528979414436488674, guid: ef437b683f5b12c45b0e3b969c8a0d11, type: 3}
@@ -3416,6 +3436,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 417504519}
+    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 417504521}
   m_SourcePrefab: {fileID: 100100000, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
 --- !u!1001 &739372978
 PrefabInstance:
