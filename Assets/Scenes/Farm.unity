@@ -2061,56 +2061,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3924748660268967392, guid: 79f4e95dd4c81c34ea880dbab81ab346, type: 3}
   m_PrefabInstance: {fileID: 2141662956}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &417504512 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-  m_PrefabInstance: {fileID: 737625313}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &417504519
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 417504512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18550ce763896bb4b89b352d67c7a6a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
---- !u!114 &417504520
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 417504512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08989f104d13ef94e98b56c05fb4018d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHealth: 4
---- !u!114 &417504521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 417504512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a96a1ecb3a7f48468584914705c04c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
-  damage: 10
-  cooldown: 2
-  attackRadius: 0.4
-  attackDistance: 0.5
-  attackHeight: 0.6
-  enemyLayers:
-    serializedVersion: 2
-    m_Bits: 64
 --- !u!4 &425429890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7528979414436488674, guid: ef437b683f5b12c45b0e3b969c8a0d11, type: 3}
@@ -3282,18 +3232,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3040561594534176791, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 032c1c377229c364289c7254f138dec7, type: 2}
-    - target: {fileID: 5287558216685327010, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5287558216685327010, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5287558216685327010, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 52.01
@@ -3338,23 +3276,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      propertyPath: m_Layer
-      value: 7
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 417504520}
-    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 417504519}
-    - targetCorrespondingSourceObject: {fileID: 7841681221009350379, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 417504521}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7c8d50e1257d6924a93acf3f81e297f2, type: 3}
 --- !u!1001 &739372978
 PrefabInstance:
