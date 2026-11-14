@@ -14,9 +14,12 @@ GameObject:
   - component: {fileID: 1098514853108525890}
   - component: {fileID: 5599194485952539450}
   - component: {fileID: 3040561594534176791}
+  - component: {fileID: 5311495452826722078}
+  - component: {fileID: 9027490633300387613}
+  - component: {fileID: 4828053918734067748}
   - component: {fileID: 7079667775838529675}
   - component: {fileID: 4732399045582120879}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -183,6 +186,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   speed: 5
+  facingDirection: {x: 0, y: -1}
 --- !u!95 &3040561594534176791
 Animator:
   serializedVersion: 7
@@ -193,7 +197,7 @@ Animator:
   m_GameObject: {fileID: 7841681221009350379}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 8335257153469052726, guid: 658f5558659be644a97580e8482730ce, type: 3}
+  m_Controller: {fileID: 9100000, guid: 032c1c377229c364289c7254f138dec7, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -205,6 +209,51 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5311495452826722078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08989f104d13ef94e98b56c05fb4018d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 4
+--- !u!114 &9027490633300387613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18550ce763896bb4b89b352d67c7a6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+--- !u!114 &4828053918734067748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a96a1ecb3a7f48468584914705c04c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
+  damage: 10
+  cooldown: 2
+  attackRadius: 0.4
+  attackDistance: 0.5
+  attackHeight: 0.6
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &7079667775838529675
 MonoBehaviour:
   m_ObjectHideFlags: 0

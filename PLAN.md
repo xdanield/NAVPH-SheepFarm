@@ -18,8 +18,8 @@ Hrateľné jadro hry. Stačí placeholder grafika. Poradie je zhruba také, v ak
 
 - [ ] **P1-01 Mapa** – tilemap: farma s ohradou vpravo, les vľavo, okraje mapy s collidermi - ADI
 - [ ] **P1-02 Ovce v ohrade** – na štarte 10 oviec, túlajú sa vnútri ohrady
-- [ ] **P1-03 HP hráča** – 4 srdcia, hryznutie uberie 1 srdce, smrť = game over
-- [ ] **P1-04 Boj nožom** – ľavý klik, 10 dmg, dosah 0,4 m, cooldown 2 s; zombie má 100 HP
+- [x] **P1-03 HP hráča** – 4 srdcia, hryznutie uberie 1 srdce, smrť = game over
+- [x] **P1-04 Boj nožom** – ľavý klik, 10 dmg, dosah 0,4 m, cooldown 2 s; zombie má 100 HP
 - [ ] **P1-05 Zombie AI** – algoritmus, spawn vľavo, idú k najbližšej ovci a obchádzajú prekážky (NavMeshPlus); hráča napadnú, len keď je blízko
 - [ ] **P1-06 Ohrada s HP** – 200 HP, zombie do nej búchajú po 10
 - [ ] **P1-07 Odnášanie oviec** – 2 zombie pri ovci ju odnesú (stačí, že zmiznú)
@@ -47,6 +47,7 @@ Hrateľné jadro hry. Stačí placeholder grafika. Poradie je zhruba také, v ak
 - [ ] **P2-11 Tileset** – farma, les, lúky, stromy, kamene
 - [ ] **P2-12 Ukladanie** – auto-save ráno, Continue v menu
 - [ ] **P2-13 Obrazovka skladu** – presun vecí batoh ↔ truhla
+- [ ] **P2-14 Animacia hracoveho utoku** - Pridat animaciu nozika k utoku
 
 ## P3 – Ak bude čas
 

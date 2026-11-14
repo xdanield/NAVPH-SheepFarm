@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveInput;
     private Animator animator;
     private PlayerInteractor interactor;
+    public Vector2 facingDirection = Vector2.down;
 
     void Start()
     {
@@ -29,6 +30,11 @@ public class PlayerMovement : MonoBehaviour
         if (interactor != null && interactor.IsBusy)
         {
             moveInput = Vector2.zero;
+        }
+
+        if (moveInput != Vector2.zero)
+        {
+            facingDirection = moveInput.normalized;
         }
 
         if (moveInput.x != 0f)
