@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum DayPhase { Day, Night }
 
@@ -11,6 +12,11 @@ public class DayNightCycle : MonoBehaviour
     public DayPhase Phase { get; private set; }
     public int DayNumber { get; private set; } = 1;
     public float TimeLeft { get; private set; }
+    /// <summary>Dlzka aktualnej fazy (dna alebo noci) v sekundach.</summary>
+    public float PhaseLength => Phase == DayPhase.Day ? dayLength : nightLength;
+
+    [Tooltip("Len na testovanie: ked drzis T, cas bezi takto rychlejsie.")]
+    [SerializeField] private float debugSpeed = 10f;
 
     public event Action<DayPhase> PhaseChanged;
 
@@ -21,7 +27,11 @@ public class DayNightCycle : MonoBehaviour
 
     void Update()
     {
-        TimeLeft -= Time.deltaTime;
+        float speed = 1f;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Keyboard.current != null && Keyboard.current.tKey.isPressed) speed = debugSpeed;
+#endif
+        TimeLeft -= Time.deltaTime * speed;
         if (TimeLeft > 0f) return;
 
         if (Phase == DayPhase.Day)
