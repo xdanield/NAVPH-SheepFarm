@@ -87,3 +87,7 @@ Desktop.ini
 # Game design document
 NAVPH-GDD-*.pdf
 __pycache__/
+
+# Python (generator mapy)
+__pycache__/
+Tools/mapgen/preview.png

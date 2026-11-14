@@ -9,15 +9,21 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Generuje placeholder mapu farmy pre scenu Farm.
+/// Stavia mapu farmy v scene Farm.
 ///
-/// Baa-ricade > Vygenerovat placeholder mapu
-///     Zmaze objekty "Environment" a "Backdrop" v scene a postavi mapu nanovo.
+/// Baa-ricade > Vygenerovat mapu
+///     Spusti Python generator (Tools/mapgen/farm_map.py), ktory vymysli teren a rozmiestni stromy, kriky,
+///     kvety... do Assets/Art/Map/farm_map.json a namaluje zem do Assets/Art/Map/farm_ground.png.
+///     Potom zmaze objekty "Environment" a "Backdrop" v scene a postavi mapu podla toho suboru.
+///     Ak Python nie je nainstalovany, postavi poslednu ulozenu mapu (subor je v gite).
 /// Baa-ricade > Aktualizovat sprity z Aseprite
 ///     Nic neprestavuje, len do Tile assetov, prefabov a pozadia da nakreslene sprity z Assets/Art.
 ///     Kym frame v .aseprite nie je nakresleny, pouzije sa placeholder.
 ///
-/// Layout (pohlad zhora ako Stardew Valley, 1 tile = 16 px = 1 unit, lavy dolny roh je (0, 0)):
+/// Konstanty nizsie (velkost mapy, ohrada, dom, crafting, zombie pruhy) cita aj Python generator,
+/// takze ich staci zmenit tu. Nemen ich format (generator ich hlada podla mena).
+///
+/// Layout (pohlad zhora, 1 tile = 16 px = 1 unit, lavy dolny roh je (0, 0)):
 ///
 ///    ~~~~~~~~~~ vyhlad: obloha, zapad slnka, hory, mesto vlavo (pozadie, parallax) ~~~~~~~~~~
 ///    ########## okraj kopca (utes) ##########  ##  <- cestou hore sa ide na Explore
@@ -28,7 +34,7 @@ using UnityEngine.Tilemaps;
 ///    ≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈ potok ≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈
 ///    nedostupny pas (kamene, kriky)
 /// </summary>
-public static class PlaceholderMapBuilder
+public static partial class PlaceholderMapBuilder
 {
     public const int Width = 64;
     public const int Height = 32;
@@ -47,17 +53,12 @@ public static class PlaceholderMapBuilder
     const string TileAssetDir = "Assets/Art/TileAssets";
     const string PrefabDir = "Assets/Prefabs/Environment";
     const string Renderer2DPath = "Assets/Settings/Renderer2D.asset";
-    const int PlaceholderScale = 2; // placeholdery su kreslene po 16 px na tile, zvacsene na 32 px
+    const int PlaceholderScale = 1; // placeholdery su kreslene po 16 px na tile
 
-    // Kamera: 640x360 px = 20x11 tiles. Na 1080p presne 3x, na 1440p 4x, na 4K 6x.
-    const int CameraWidth = 640, CameraHeight = 360;
+    // Kamera: 320x180 px = 20x11 tiles. Na 1080p presne 6x, na 1440p 8x, na 4K 12x.
+    const int CameraWidth = 320, CameraHeight = 180;
 
     // ---------------------------------------------------------------- definicie
-
-    class TileDef
-    {
-        public string Name, Aseprite; public bool Solid; public Func<Px> Paint;
-    }
 
     class PrefabDef
     {
@@ -70,14 +71,14 @@ public static class PlaceholderMapBuilder
         public string Name, Aseprite; public float Follow; public int Order; public Func<Px> Paint;
     }
 
-    static readonly TileDef[] Tiles =
+    // Placeholdery pre dlazdice, kym nie su nakreslene (ostatne dlazdice dostanu bodku).
+    static readonly Dictionary<string, Func<Px>> TilePlaceholders = new Dictionary<string, Func<Px>>
     {
-        new TileDef { Name = "grass", Aseprite = "Tiles/grass", Paint = () => Px.Noise(16, 16, "4f8a3c", "7bb54a", 0.12f, 1) },
-        new TileDef { Name = "forest_floor", Aseprite = "Tiles/forest_floor", Paint = () => Px.Noise(16, 16, "2f5d34", "1e3d23", 0.18f, 2) },
-        new TileDef { Name = "dirt", Aseprite = "Tiles/dirt", Paint = () => Px.Noise(16, 16, "a0784a", "8b5a2b", 0.15f, 3) },
-        new TileDef { Name = "path", Aseprite = "Tiles/path", Paint = () => Px.Noise(16, 16, "d9b25c", "c08552", 0.12f, 4) },
-        new TileDef { Name = "water", Aseprite = "Tiles/water", Solid = true, Paint = Px.Water },
-        new TileDef { Name = "cliff", Aseprite = "Tiles/cliff", Solid = true, Paint = Px.Cliff },
+        ["grass"] = () => Px.Noise(16, 16, "4f8a3c", "7bb54a", 0.12f, 1),
+        ["grass_dark"] = () => Px.Noise(16, 16, "2f5d34", "1e3d23", 0.18f, 2),
+        ["dirt"] = () => Px.Noise(16, 16, "a0784a", "8b5a2b", 0.15f, 3),
+        ["water"] = Px.Water,
+        ["cliff"] = Px.Cliff,
     };
 
     static readonly PrefabDef[] Prefabs =
@@ -86,9 +87,15 @@ public static class PlaceholderMapBuilder
         new PrefabDef { Name = "Rock", Aseprite = "Objects/rock", Paint = Px.Rock, ColliderSize = new Vector2(0.8f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
         new PrefabDef { Name = "GrassTuft", Aseprite = "Objects/grass_tuft", Paint = Px.GrassTuft, ColliderSize = new Vector2(0.8f, 0.6f), ColliderOffset = new Vector2(0, 0.3f), Trigger = true },
         new PrefabDef { Name = "BerryBush", Aseprite = "Objects/berry_bush", Paint = Px.BerryBush, ColliderSize = new Vector2(0.8f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
+        // pen_fence.aseprite: 0 H s kolikom, 1 V s kolikom, 2 H bez kolika, 3 V bez kolika, 4-7 rohy (BL, BR, TL, TR)
         new PrefabDef { Name = "PenFence_H", Aseprite = "Objects/pen_fence", Frame = 0, Paint = () => Px.Fence("5d3a24", "8b5a2b", 0), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
         new PrefabDef { Name = "PenFence_V", Aseprite = "Objects/pen_fence", Frame = 1, Paint = () => Px.Fence("5d3a24", "8b5a2b", 1), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
-        new PrefabDef { Name = "PenFence_Corner", Aseprite = "Objects/pen_fence", Frame = 2, Paint = () => Px.Fence("5d3a24", "8b5a2b", 2), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_H_Rail", Aseprite = "Objects/pen_fence", Frame = 2, Paint = () => Px.Fence("5d3a24", "8b5a2b", 0), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_V_Rail", Aseprite = "Objects/pen_fence", Frame = 3, Paint = () => Px.Fence("5d3a24", "8b5a2b", 1), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_Corner_BL", Aseprite = "Objects/pen_fence", Frame = 4, Paint = () => Px.Fence("5d3a24", "8b5a2b", 2), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_Corner_BR", Aseprite = "Objects/pen_fence", Frame = 5, Paint = () => Px.Fence("5d3a24", "8b5a2b", 2), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_Corner_TL", Aseprite = "Objects/pen_fence", Frame = 6, Paint = () => Px.Fence("5d3a24", "8b5a2b", 2), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
+        new PrefabDef { Name = "PenFence_Corner_TR", Aseprite = "Objects/pen_fence", Frame = 7, Paint = () => Px.Fence("5d3a24", "8b5a2b", 2), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
         new PrefabDef { Name = "Fence", Aseprite = "Objects/fence", Paint = () => Px.Fence("8b5a2b", "c08552", 1), ColliderSize = Vector2.one, ColliderOffset = new Vector2(0, 0.5f) },
         new PrefabDef { Name = "Spikes", Aseprite = "Objects/spikes", Paint = Px.Spikes, ColliderSize = new Vector2(0.9f, 0.9f), ColliderOffset = new Vector2(0, 0.5f), Trigger = true },
         new PrefabDef { Name = "Chest", Aseprite = "Objects/chest", Paint = Px.Chest, ColliderSize = new Vector2(0.9f, 0.6f), ColliderOffset = new Vector2(0, 0.3f) },
@@ -107,32 +114,42 @@ public static class PlaceholderMapBuilder
 
     // ---------------------------------------------------------------- menu
 
-    [MenuItem("Baa-ricade/Vygenerovat placeholder mapu")]
+    [MenuItem("Baa-ricade/Vygenerovat mapu")]
     public static void BuildMap()
     {
         var scene = EditorSceneManager.GetActiveScene();
         if (scene.name != "Farm" &&
-            !EditorUtility.DisplayDialog("Placeholder mapa", $"Aktivna scena je '{scene.name}', nie 'Farm'. Pokracovat aj tak?", "Ano", "Nie"))
+            !EditorUtility.DisplayDialog("Mapa", $"Aktivna scena je '{scene.name}', nie 'Farm'. Pokracovat aj tak?", "Ano", "Nie"))
             return;
 
         var old = scene.GetRootGameObjects().Where(g => g.name == "Environment" || g.name == "Backdrop").ToArray();
         if (old.Length > 0 &&
-            !EditorUtility.DisplayDialog("Placeholder mapa", "Objekty 'Environment' a 'Backdrop' sa zmazu a mapa sa vygeneruje nanovo. Rucne upravy v nich sa stratia (Ctrl+Z to vrati).", "Prestavat", "Zrusit"))
+            !EditorUtility.DisplayDialog("Mapa", "Objekty 'Environment' a 'Backdrop' sa zmazu a mapa sa vygeneruje nanovo. Rucne upravy v nich sa stratia (Ctrl+Z to vrati).", "Prestavat", "Zrusit"))
             return;
 
+        if (!RunGenerator())
+        {
+            if (!File.Exists(MapJsonPath)) { EditorUtility.DisplayDialog("Mapa", "Generator mapy zlyhal a ulozena mapa neexistuje. Detaily su v Console.", "OK"); return; }
+            if (!EditorUtility.DisplayDialog("Mapa", "Generator mapy (Python) sa nepodarilo spustit, detaily su v Console. Postavit poslednu ulozenu mapu?", "Postavit", "Zrusit"))
+                return;
+        }
+
+        AssetDatabase.Refresh();     // novy farm_map.json, farm_ground.png a zmenene .aseprite subory
         ArtImportSettings.FixAll(); // vsetka grafika v Assets/Art na aktualne PPU a Point filter
+        var map = JsonUtility.FromJson<MapData>(File.ReadAllText(MapJsonPath));
         var tiles = UpdateTileAssets();
         var prefabs = UpdatePrefabs();
         var backdrop = Backdrop.ToDictionary(b => b.Name, b => ResolveSprite(b.Aseprite, 0, $"Background/{b.Name}", b.Paint));
 
-        Undo.SetCurrentGroupName("Vygenerovat placeholder mapu");
+        Undo.SetCurrentGroupName("Vygenerovat mapu");
         foreach (var go in old) Undo.DestroyObjectImmediate(go);
 
         var root = new GameObject("Environment");
         Undo.RegisterCreatedObjectUndo(root, "Environment");
-        BuildTilemaps(root.transform, tiles);
+        BuildGround(root.transform, map, tiles);
         BuildEdges(root.transform);
-        PlaceObjects(root.transform, prefabs);
+        PlaceNature(root.transform, map, prefabs);
+        PlaceFarm(root.transform, prefabs);
 
         var back = new GameObject("Backdrop");
         Undo.RegisterCreatedObjectUndo(back, "Backdrop");
@@ -144,12 +161,13 @@ public static class PlaceholderMapBuilder
         SetupSorting();
 
         EditorSceneManager.MarkSceneDirty(scene);
-        Debug.Log($"Placeholder mapa {Width}x{Height} hotova. Nezabudni ulozit scenu (Ctrl+S).");
+        Debug.Log($"Mapa {map.width}x{map.height} (seed {map.seed}) hotova. Nezabudni ulozit scenu (Ctrl+S).");
     }
 
     [MenuItem("Baa-ricade/Aktualizovat sprity z Aseprite")]
     public static void RefreshSprites()
     {
+        AssetDatabase.Refresh();
         UpdateTileAssets();
         UpdatePrefabs();
         SetupCharacters();
@@ -172,23 +190,44 @@ public static class PlaceholderMapBuilder
 
     // ---------------------------------------------------------------- assety
 
-    static Dictionary<string, TileBase> UpdateTileAssets()
+    /// Kazdy .aseprite v Assets/Art/Tiles (aj v podpriecinkoch) je sada dlazdic, kazdy snimok jedna varianta:
+    /// Tiles/Decor/flowers.aseprite -> TileAssets/Decor/flowers.asset, flowers_1.asset, flowers_2.asset...
+    /// Kluc v slovniku je cesta bez pripony ("grass", "Decor/flowers"), rovnako ako v farm_map.json.
+    static Dictionary<string, TileBase[]> UpdateTileAssets()
     {
         EnsureFolder(TileAssetDir);
-        var result = new Dictionary<string, TileBase>();
-        foreach (var def in Tiles)
+        var result = new Dictionary<string, TileBase[]>();
+        const string tilesDir = "Assets/Art/Tiles/";
+        var files = AssetDatabase.FindAssets("", new[] { "Assets/Art/Tiles" })
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(f => f.EndsWith(".aseprite"))
+            .Distinct();
+        foreach (string file in files)
         {
-            string path = $"{TileAssetDir}/{def.Name}.asset";
-            var tile = AssetDatabase.LoadAssetAtPath<Tile>(path);
-            if (tile == null)
+            string name = file.Substring(tilesDir.Length, file.Length - tilesDir.Length - ".aseprite".Length);
+            string aseprite = "Tiles/" + name;
+            Func<Px> paint = TilePlaceholders.TryGetValue(name, out var ph) ? ph : () => Px.Dot("ff00ff");
+            ResolveSprite(aseprite, 0, aseprite, paint); // naimportuje .aseprite, ak treba
+            int frames = Mathf.Max(1, AssetDatabase.LoadAllAssetsAtPath(file).OfType<Sprite>().Count(sp => sp.name.StartsWith("Frame_")));
+            string dir = Path.GetDirectoryName($"{TileAssetDir}/{name}").Replace('\\', '/');
+            string baseName = Path.GetFileName(name);
+            EnsureFolder(dir);
+            var variants = new TileBase[frames];
+            for (int i = 0; i < frames; i++)
             {
-                tile = ScriptableObject.CreateInstance<Tile>();
-                AssetDatabase.CreateAsset(tile, path);
+                string path = i == 0 ? $"{dir}/{baseName}.asset" : $"{dir}/{baseName}_{i}.asset";
+                var tile = AssetDatabase.LoadAssetAtPath<Tile>(path);
+                if (tile == null)
+                {
+                    tile = ScriptableObject.CreateInstance<Tile>();
+                    AssetDatabase.CreateAsset(tile, path);
+                }
+                tile.sprite = ResolveSprite(aseprite, i, aseprite, paint);
+                tile.colliderType = Tile.ColliderType.Grid; // kolizia je len na tilemapach, ktore maju collider
+                EditorUtility.SetDirty(tile);
+                variants[i] = tile;
             }
-            tile.sprite = ResolveSprite(def.Aseprite, 0, $"Tiles/{def.Name}", def.Paint);
-            tile.colliderType = def.Solid ? Tile.ColliderType.Grid : Tile.ColliderType.None;
-            EditorUtility.SetDirty(tile);
-            result[def.Name] = tile;
+            result[name] = variants;
         }
         AssetDatabase.SaveAssets();
         return result;
@@ -209,6 +248,7 @@ public static class PlaceholderMapBuilder
                 var contents = PrefabUtility.LoadPrefabContents(path);
                 var sr = contents.GetComponent<SpriteRenderer>();
                 if (sr != null) sr.sprite = sprite;
+                ApplyGathering(contents, def);
                 PrefabUtility.SaveAsPrefabAsset(contents, path);
                 PrefabUtility.UnloadPrefabContents(contents);
             }
@@ -222,6 +262,7 @@ public static class PlaceholderMapBuilder
                 col.size = def.ColliderSize;
                 col.offset = def.ColliderOffset;
                 col.isTrigger = def.Trigger;
+                ApplyGathering(go, def);
                 PrefabUtility.SaveAsPrefabAsset(go, path);
                 UnityEngine.Object.DestroyImmediate(go);
             }
@@ -235,10 +276,18 @@ public static class PlaceholderMapBuilder
     {
         string asePath = $"Assets/Art/{aseprite}.aseprite";
         var sprites = AssetDatabase.LoadAllAssetsAtPath(asePath).OfType<Sprite>().ToArray();
+        if (sprites.Length == 0 && File.Exists(asePath))
+        {
+            // Subor existuje, ale Unity ho este nenaimportovala -> naimportuj hned.
+            AssetDatabase.ImportAsset(asePath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+            sprites = AssetDatabase.LoadAllAssetsAtPath(asePath).OfType<Sprite>().ToArray();
+        }
         var drawn = sprites.FirstOrDefault(s => s.name == $"Frame_{frame}");
         if (drawn == null && frame == 0 && sprites.Length == 1 && !sprites[0].name.StartsWith("Frame_"))
             drawn = sprites[0];
         if (drawn != null) return drawn;
+        if (sprites.Length > 0)
+            Debug.LogWarning($"{asePath}: snimok {frame} sa nenasiel (sprity: {string.Join(", ", sprites.Select(s => s.name))}), pouzivam placeholder.");
 
         // Podpriecinok Tiles/ dostane pivot v strede, ostatne dole v strede (ArtImportSettings).
         string pngPath = $"{PlaceholderDir}/{placeholderName}.png";
@@ -251,62 +300,141 @@ public static class PlaceholderMapBuilder
         return AssetDatabase.LoadAssetAtPath<Sprite>(pngPath);
     }
 
-    // ---------------------------------------------------------------- tvar mapy
+    // ---------------------------------------------------------------- mapa zo suboru (farm_map.json)
 
-    static int ForestEdge(int y) => ForestDepth + Mathf.RoundToInt(1.5f * Mathf.Sin(y * 0.4f) + Mathf.Sin(y * 0.17f + 2f));
-    static int RiverY(int x) => 4 + Mathf.RoundToInt(1.2f * Mathf.Sin(x * 0.12f + 1f));
-    static bool InRiver(int x, int y, int margin = 0) => Mathf.Abs(y - RiverY(x)) <= 1 + margin;
-    static bool BelowRiver(int x, int y) => y < RiverY(x) - 1;
-    static bool InForest(int x, int y) => x < ForestEdge(y);
-    static bool InCliff(int x, int y) => y >= Height - CliffRows && Mathf.Abs(x - ExitX) > 1;
-    static bool InCraft(int x, int y) => CraftArea.Contains(new Vector2Int(x, y));
-    static bool InPen(int x, int y, int margin = 0) =>
-        x >= Pen.xMin - margin && x < Pen.xMax + margin && y >= Pen.yMin - margin && y < Pen.yMax + margin;
-    static bool InHouse(int x, int y, int margin = 0) =>
-        Mathf.Abs(x + 0.5f - HouseDoor.x) <= HouseWidth / 2f + margin && y >= HouseDoor.y - margin && y < HouseDoor.y + HouseHeight + margin;
+    const string MapJsonPath = "Assets/Art/Map/farm_map.json";
+    const string GeneratorScript = "Tools/mapgen/farm_map.py";
 
-    // Cesta: od dveri dole ku craftingu, od dveri dolava a potom hore k vychodu na Explore.
-    static readonly RectInt[] PathRects =
+    [Serializable] class MapData
     {
-        new RectInt(HouseDoor.x - 1, CraftArea.yMax - 1, 2, HouseDoor.y - CraftArea.yMax + 1),
-        new RectInt(ExitX - 1, HouseDoor.y - 2, HouseDoor.x - ExitX, 2),
-        new RectInt(ExitX - 1, HouseDoor.y - 2, 3, Height - HouseDoor.y + 2),
-    };
+        public int width, height, seed, groundOrder;
+        public string ground;
+        public string[] tiles;          // "nazov:snimok", napr. "Decor/flowers:3"
+        public MapLayer[] layers;
+        public MapObject[] objects;     // zbieratelne veci (prefaby)
+        public MapProp[] props;         // dekoracie (stromy, kriky, kamene, tiene...)
+    }
+    [Serializable] class MapLayer { public string name; public int order; public bool collision, hidden; public int[] cells; }
+    [Serializable] class MapObject { public string prefab; public int x, y; }
+    [Serializable] class MapProp { public string sprite; public int frame, order; public float x, y, cw, ch; public bool collider, flip; }
 
-    static bool OnPath(int x, int y, int margin = 0)
+    /// Spusti Python generator mapy. Vrati false, ak sa nepodarilo (detaily v Console).
+    static bool RunGenerator()
     {
-        foreach (var r in PathRects)
-            if (x >= r.xMin - margin && x < r.xMax + margin && y >= r.yMin - margin && y < r.yMax + margin) return true;
+        string root = Path.GetDirectoryName(Application.dataPath);
+        string script = Path.Combine(root, GeneratorScript);
+        foreach (string exe in new[] { "python", "py", "python3" })
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo(exe, $"\"{script}\"")
+                {
+                    WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true,
+                    RedirectStandardOutput = true, RedirectStandardError = true,
+                };
+                using (var proc = System.Diagnostics.Process.Start(psi))
+                {
+                    var err = proc.StandardError.ReadToEndAsync();
+                    string output = proc.StandardOutput.ReadToEnd();
+                    proc.WaitForExit();
+                    if (proc.ExitCode == 9009) continue; // Windows: "python" je len odkaz na Microsoft Store
+                    if (proc.ExitCode == 0) { Debug.Log($"Generator mapy:\n{output}"); return true; }
+                    Debug.LogError($"Generator mapy zlyhal ({exe}, kod {proc.ExitCode}):\n{err.Result}\n{output}");
+                    return false;
+                }
+            }
+            catch (System.ComponentModel.Win32Exception) { } // tento prikaz neexistuje, skus dalsi
+        }
+        Debug.LogError("Python som nenasla (skusala som python, py, python3). Nainstaluj Python 3 s balikmi numpy a pillow: pip install numpy pillow");
         return false;
     }
 
-    static void BuildTilemaps(Transform root, Dictionary<string, TileBase> t)
+    /// Zem (namalovany obrazok) a tilemapy: kolizia potoka, utes, ozdoby.
+    static void BuildGround(Transform root, MapData map, Dictionary<string, TileBase[]> tiles)
     {
+        var groundSprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Art/{map.ground}.png");
+        if (groundSprite == null) Debug.LogWarning($"Assets/Art/{map.ground}.png sa nenasiel, zem bude prazdna.");
+        var ground = new GameObject("Ground");
+        ground.transform.SetParent(root, false);
+        ground.transform.position = new Vector3(map.width / 2f, 0, 0); // pivot obrazka je dole v strede
+        var gsr = ground.AddComponent<SpriteRenderer>();
+        gsr.sprite = groundSprite;
+        gsr.sortingOrder = map.groundOrder;
+
+        // kluc "nazov:snimok" -> Tile
+        var lookup = new TileBase[map.tiles.Length];
+        for (int i = 0; i < map.tiles.Length; i++)
+        {
+            int colon = map.tiles[i].LastIndexOf(':');
+            string name = map.tiles[i].Substring(0, colon);
+            int frame = int.Parse(map.tiles[i].Substring(colon + 1));
+            if (tiles.TryGetValue(name, out var v)) lookup[i] = v[Mathf.Min(frame, v.Length - 1)];
+            else Debug.LogWarning($"Dlazdica '{name}' z mapy neexistuje v Assets/Art/Tiles.");
+        }
+
         var gridGo = new GameObject("Grid", typeof(Grid));
         gridGo.transform.SetParent(root, false);
-
-        var ground = CreateTilemap(gridGo.transform, "Ground", -100);
-        CreateTilemap(gridGo.transform, "Decor", -90); // prazdna, na kvety, kamienky a pod.
-        var collision = CreateTilemap(gridGo.transform, "Collision", -80);
-
-        var colGo = collision.gameObject;
-        colGo.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-        var composite = colGo.AddComponent<CompositeCollider2D>();
-        composite.geometryType = CompositeCollider2D.GeometryType.Polygons;
-        colGo.AddComponent<TilemapCollider2D>().compositeOperation = Collider2D.CompositeOperation.Merge;
-
-        for (int x = 0; x < Width; x++)
-        for (int y = 0; y < Height; y++)
+        foreach (var layer in map.layers)
         {
-            var cell = new Vector3Int(x, y, 0);
-            string g = OnPath(x, y) ? "path"
-                     : InCraft(x, y) ? "dirt"
-                     : InForest(x, y) && !BelowRiver(x, y) ? "forest_floor"
-                     : "grass";
-            ground.SetTile(cell, t[g]);
+            var tm = CreateTilemap(gridGo.transform, layer.name, layer.order);
+            if (layer.hidden) tm.GetComponent<TilemapRenderer>().enabled = false;
+            if (layer.collision)
+            {
+                var go = tm.gameObject;
+                go.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+                go.AddComponent<CompositeCollider2D>().geometryType = CompositeCollider2D.GeometryType.Polygons;
+                go.AddComponent<TilemapCollider2D>().compositeOperation = Collider2D.CompositeOperation.Merge;
+            }
+            var positions = new List<Vector3Int>();
+            var cells = new List<TileBase>();
+            for (int i = 0; i < layer.cells.Length; i++)
+            {
+                int id = layer.cells[i];
+                if (id < 0 || lookup[id] == null) continue;
+                positions.Add(new Vector3Int(i % map.width, i / map.width, 0));
+                cells.Add(lookup[id]);
+            }
+            tm.SetTiles(positions.ToArray(), cells.ToArray());
+        }
+    }
 
-            if (InCliff(x, y)) collision.SetTile(cell, t["cliff"]);
-            else if (InRiver(x, y)) collision.SetTile(cell, t["water"]);
+    /// Stromy, kriky, kamene (dekoracie) a zbieratelne veci zo suboru mapy.
+    static void PlaceNature(Transform root, MapData map, Dictionary<string, GameObject> prefabs)
+    {
+        var nature = Child(root, "Nature");
+        foreach (var o in map.objects)
+        {
+            if (prefabs.TryGetValue(o.prefab, out var prefab)) Spawn(prefab, nature, o.x, o.y);
+            else Debug.LogWarning($"Prefab '{o.prefab}' z mapy neexistuje.");
+        }
+
+        var props = Child(root, "Props");
+        var cache = new Dictionary<string, Sprite[]>();
+        foreach (var p in map.props)
+        {
+            if (!cache.TryGetValue(p.sprite, out var sprites))
+            {
+                var all = AssetDatabase.LoadAllAssetsAtPath($"Assets/Art/{p.sprite}.aseprite").OfType<Sprite>().ToArray();
+                sprites = all.Length == 1 ? all
+                    : all.Where(s => s.name.StartsWith("Frame_")).OrderBy(s => int.Parse(s.name.Substring(6))).ToArray();
+                cache[p.sprite] = sprites;
+                if (sprites.Length == 0) Debug.LogWarning($"Assets/Art/{p.sprite}.aseprite nema sprity.");
+            }
+            if (sprites.Length == 0) continue;
+            var go = new GameObject(Path.GetFileName(p.sprite));
+            go.transform.SetParent(props, false);
+            go.transform.position = new Vector3(p.x, p.y, 0);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprites[Mathf.Min(p.frame, sprites.Length - 1)];
+            sr.sortingOrder = p.order;
+            sr.spriteSortPoint = SpriteSortPoint.Pivot;
+            sr.flipX = p.flip;
+            if (p.collider)
+            {
+                var col = go.AddComponent<BoxCollider2D>();
+                col.size = new Vector2(p.cw, p.ch);
+                col.offset = new Vector2(0, p.ch / 2);
+            }
         }
     }
 
@@ -337,63 +465,9 @@ public static class PlaceholderMapBuilder
 
     // ---------------------------------------------------------------- objekty
 
-    static void PlaceObjects(Transform root, Dictionary<string, GameObject> p)
+    /// Ohrada, obrana, dom, crafting a body (spawn zombie, start hraca, vychod na Explore).
+    static void PlaceFarm(Transform root, Dictionary<string, GameObject> p)
     {
-        var rng = new System.Random(Seed);
-        var blocked = new HashSet<Vector2Int>();
-
-        for (int x = 0; x < Width; x++)
-        for (int y = 0; y < Height; y++)
-        {
-            bool lane = InForest(x, y) && ZombieLanes.Any(l => Mathf.Abs(y - l) <= 1);
-            if (InPen(x, y, 2) || InHouse(x, y, 1) || CraftArea.Contains(new Vector2Int(x, y)) || OnPath(x, y, 1) ||
-                InRiver(x, y, 1) || InCliff(x, y) || y >= Height - CliffRows || lane ||
-                (x >= Pen.xMin - 5 && x < Pen.xMin && InPen(Pen.xMin, y))) // miesto pre obranu
-                blocked.Add(new Vector2Int(x, y));
-        }
-
-        var nature = Child(root, "Nature");
-
-        bool TryPlace(string prefab, int x, int y)
-        {
-            var c = new Vector2Int(x, y);
-            if (x < 0 || y < 0 || x >= Width || y >= Height || blocked.Contains(c)) return false;
-            Spawn(p[prefab], nature, x, y);
-            blocked.Add(c);
-            blocked.Add(c + Vector2Int.right);
-            blocked.Add(c + Vector2Int.up);
-            blocked.Add(c + Vector2Int.left);
-            return true;
-        }
-
-        // Stromy po blokoch 2x2 s nahodnym posunom: husto v lese vlavo, v pravom hornom rohu
-        // a za potokom, sem-tam pod utesom.
-        for (int bx = 0; bx < Width; bx += 2)
-        for (int by = 0; by < Height; by += 2)
-        {
-            int x = bx + rng.Next(2), y = by + rng.Next(2);
-            float chance = BelowRiver(x, y) ? 0.25f
-                         : InForest(x, y) ? 0.75f
-                         : x >= Width - 6 && y >= HouseDoor.y - 2 ? 0.5f
-                         : x >= Width - 3 ? 0.35f
-                         : y >= Height - CliffRows - 3 ? 0.15f
-                         : 0.02f;
-            if (rng.NextDouble() < chance) TryPlace("Tree", x, y);
-        }
-
-        // Drobnosti: trava na luke, kamene a kriky za potokom.
-        for (int x = 0; x < Width; x++)
-        for (int y = 0; y < Height; y++)
-        {
-            double r = rng.NextDouble();
-            if (BelowRiver(x, y))
-            {
-                if (r < 0.08) TryPlace("Rock", x, y);
-                else if (r < 0.14) TryPlace("BerryBush", x, y);
-            }
-            else if (!InForest(x, y) && r < 0.025) TryPlace("GrassTuft", x, y);
-        }
-
         // Ohrada: plot po obvode Pen. Root "Pen" je miesto pre skript s HP ohrady (P1-06).
         var pen = Child(root, "Pen");
         for (int x = Pen.xMin; x < Pen.xMax; x++)
@@ -401,9 +475,9 @@ public static class PlaceholderMapBuilder
         {
             bool vEdge = x == Pen.xMin || x == Pen.xMax - 1;
             bool hEdge = y == Pen.yMin || y == Pen.yMax - 1;
-            if (vEdge && hEdge) Spawn(p["PenFence_Corner"], pen, x, y);
-            else if (hEdge) Spawn(p["PenFence_H"], pen, x, y);
-            else if (vEdge) Spawn(p["PenFence_V"], pen, x, y);
+            if (vEdge && hEdge) Spawn(p[$"PenFence_Corner_{(y == Pen.yMin ? "B" : "T")}{(x == Pen.xMin ? "L" : "R")}"], pen, x, y);
+            else if (hEdge) Spawn(p[FencePost(x - Pen.xMin, Pen.width) ? "PenFence_H" : "PenFence_H_Rail"], pen, x, y);
+            else if (vEdge) Spawn(p[FencePost(y - Pen.yMin, Pen.height) ? "PenFence_V" : "PenFence_V_Rail"], pen, x, y);
         }
 
         // Obrana na start (GDD: hrac zacina s par plotmi a bodcami) na lavej strane ohrady.
@@ -456,6 +530,13 @@ public static class PlaceholderMapBuilder
         var go = new GameObject(name);
         go.transform.SetParent(parent, false);
         return go.transform;
+    }
+
+    /// Kolik plotu na kazdom druhom policku, symetricky od oboch rohov (rovnake pravidlo ma farm_map.py).
+    static bool FencePost(int i, int len)
+    {
+        if (len % 2 == 0 && i == len / 2) return false; // dva stredy: kolik len na jednom z nich
+        return Mathf.Min(i, len - 1 - i) % 2 == 0;
     }
 
     static void Spawn(GameObject prefab, Transform parent, int x, int y)
@@ -667,6 +748,13 @@ public static class PlaceholderMapBuilder
             return png;
         }
 
+        public static Px Dot(string hex)
+        {
+            var px = new Px(16, 16);
+            px.Rect(7, 7, 8, 8, hex);
+            return px;
+        }
+
         public static Px Noise(int w, int h, string baseHex, string dotHex, float density, int seed)
         {
             var px = new Px(w, h);
@@ -724,6 +812,30 @@ public static class PlaceholderMapBuilder
             int[] hs = { 5, 8, 10, 7, 5 };
             for (int i = 0; i < xs.Length; i++) px.Rect(xs[i], 1, xs[i], hs[i], i % 2 == 0 ? "7bb54a" : "b5d96b");
             px.Outline("1e3d23");
+            return px;
+        }
+
+        /// Pnik po vyrubani stromu, na rovnakom platne ako strom (pata sedi).
+        public static Px Stump()
+        {
+            var px = new Px(32, 48);
+            px.Rect(12, 0, 19, 4, "5d3a24");
+            px.Rect(13, 0, 14, 4, "8b5a2b");
+            px.Rect(12, 5, 19, 5, "c08552");
+            px.Rect(14, 5, 17, 5, "e8c39e");
+            px.Rect(9, 0, 11, 1, "5d3a24");  // korene
+            px.Rect(20, 0, 22, 1, "5d3a24");
+            px.Outline();
+            return px;
+        }
+
+        /// Ker bez bobul.
+        public static Px BerryBushEmpty()
+        {
+            var px = new Px(16, 16);
+            px.Ellipse(8, 6, 7, 5.5f, "2f5d34");
+            px.Ellipse(7, 7, 4, 3, "4f8a3c");
+            px.Outline();
             return px;
         }
 

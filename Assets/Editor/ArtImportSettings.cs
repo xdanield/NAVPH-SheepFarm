@@ -4,12 +4,12 @@ using UnityEngine;
 
 /// <summary>
 /// Automaticky nastavi import grafiky v Assets/Art pre pixelart:
-/// 32 PPU, Point filter, bez kompresie, pivot dole v strede (tiles v strede).
+/// 16 PPU, Point filter, bez kompresie, pivot dole v strede (tiles v strede).
 /// Plati len pre nove subory; pre existujuce: menu Baa-ricade > Opravit import grafiky.
 /// </summary>
 public class ArtImportSettings : AssetPostprocessor
 {
-    public const int PPU = 32; // 1 tile = 32 px = 1 Unity unit
+    public const int PPU = 16; // 1 tile = 16 px = 1 Unity unit
     const string ArtRoot = "Assets/Art/";
 
     void OnPreprocessAsset()
@@ -36,7 +36,9 @@ public class ArtImportSettings : AssetPostprocessor
         importer.pivotAlignment = IsTile(path) ? SpriteAlignment.Center : SpriteAlignment.BottomCenter;
 
         bool character = IsCharacter(path);
-        importer.importMode = character ? FileImportModes.AnimatedSprite : FileImportModes.SpriteSheet;
+        // Vzdy AnimatedSprite: len ten vyrobi sprite z kazdeho snimku sam (SpriteSheet caka na rucne rezanie
+        // v Sprite Editore a bez neho nema ziadne sprity). Animacie a prefab len pre postavy.
+        importer.importMode = FileImportModes.AnimatedSprite;
         importer.generateAnimationClips = character;
         importer.generateModelPrefab = character;
 
@@ -80,6 +82,6 @@ public class ArtImportSettings : AssetPostprocessor
             else continue;
             importer.SaveAndReimport();
         }
-        Debug.Log("Import grafiky v Assets/Art nastaveny (32 PPU, Point, bez kompresie).");
+        Debug.Log("Import grafiky v Assets/Art nastaveny (16 PPU, Point, bez kompresie).");
     }
 }

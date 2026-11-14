@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1566327898468299130}
   - component: {fileID: 3664497521533478342}
   - component: {fileID: 7725550870651314408}
+  - component: {fileID: 6260785261150318719}
   m_Layer: 0
   m_Name: BerryBush
   m_TagString: Untagged
@@ -82,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 2cbeb6aa46c793b489d46cf465d255be, type: 3}
+  m_Sprite: {fileID: -7516290887903047842, guid: 2ad63bb7281c10447a9a3632b9d9df15, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -130,7 +131,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1.75, y: 1.625}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -138,3 +139,28 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.8, y: 0.5}
   m_EdgeRadius: 0
+--- !u!114 &6260785261150318719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143652350798023853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b0395ecf8f3094a9929b9058b28435, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gatherable
+  promptHeight: 0
+  item: {fileID: 11400000, guid: 131522926358c3641bbd2416d983c1fc, type: 2}
+  amount: {x: 2, y: 3}
+  actionName: Pick berries
+  gatherTime: 0.8
+  harvests: 1
+  depletedSprite: {fileID: -182666731195795849, guid: 2ad63bb7281c10447a9a3632b9d9df15, type: 3}
+  blockWhenDepleted: 1
+  regrowDays: 2
+  wobbleAngle: 4
+  gatherSound: {fileID: 0}
+  gatherSoundInterval: 0.45
+  completeSound: {fileID: 0}

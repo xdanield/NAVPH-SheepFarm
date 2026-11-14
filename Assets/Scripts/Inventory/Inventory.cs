@@ -57,6 +57,19 @@ public class Inventory : MonoBehaviour
 
     public bool Has(ItemData item, int count = 1) => CountOf(item) >= count;
 
+    /// <summary>Kolko kusov tohto predmetu sa este zmesti (doplnenie stackov + prazdne sloty).</summary>
+    public int SpaceFor(ItemData item)
+    {
+        if (item == null) return 0;
+        int space = 0;
+        foreach (var s in slots)
+        {
+            if (s.IsEmpty) space += item.MaxStack;
+            else if (s.item == item) space += s.SpaceLeft;
+        }
+        return space;
+    }
+
     // ------------------------------------------------------------ pridavanie a odoberanie
 
     /// <summary>

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -38,16 +40,22 @@ public static class InventorySetup
     [MenuItem("Baa-ricade/Nastavit inventar")]
     public static void Setup()
     {
+        var items = EnsureItems();
+        SetupPlayer(Items.Select(d => items[d.File]).ToArray());
+        Debug.Log($"Inventar nastaveny: {Items.Length} predmetov v {ItemDir}, Inventory + InventoryUI na {PlayerPrefab}.");
+    }
+
+    /// <summary>Vytvori chybajuce predmety a ikonky. Kluc je nazov suboru ikonky ("wood", "stone"...).</summary>
+    public static Dictionary<string, ItemData> EnsureItems()
+    {
         EnsureFolder(IconDir);
         EnsureFolder(ItemDir);
 
-        var items = new ItemData[Items.Length];
-        for (int i = 0; i < Items.Length; i++)
-            items[i] = CreateItem(Items[i], CreateIcon(Items[i]));
+        var result = new Dictionary<string, ItemData>();
+        foreach (var def in Items)
+            result[def.File] = CreateItem(def, CreateIcon(def));
         AssetDatabase.SaveAssets();
-
-        SetupPlayer(items);
-        Debug.Log($"Inventar nastaveny: {Items.Length} predmetov v {ItemDir}, Inventory + InventoryUI na {PlayerPrefab}.");
+        return result;
     }
 
     static Sprite CreateIcon(ItemDef def)

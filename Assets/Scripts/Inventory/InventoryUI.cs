@@ -13,13 +13,11 @@ using UnityEngine.UI;
 ///     Shift + lavy     presunut medzi hotbarom a batohom
 ///     I alebo Esc      zatvorit (co drzis na kurzore, vrati sa do inventara)
 ///
-/// Rozmery su v hernych pixeloch (obrazovka 640x360), UI sa zvacsuje celym cislom ako hra.
+/// Rozmery su v hernych pixeloch (obrazovka 640x360, hra ma 320x180), UI sa zvacsuje celym cislom.
 /// </summary>
 [RequireComponent(typeof(Inventory))]
 public class InventoryUI : MonoBehaviour
 {
-    const int ReferenceHeight = 360;
-
     [Header("Rozmery (herne pixely)")]
     [SerializeField] private int slotSize = 24;
     [SerializeField] private int slotGap = 2;
@@ -42,7 +40,6 @@ public class InventoryUI : MonoBehaviour
     public static bool PointerOverUI { get; private set; }
 
     private Inventory inventory;
-    private Font font;
     private Canvas canvas;
     private CanvasScaler scaler;
     private RectTransform root;
@@ -72,7 +69,6 @@ public class InventoryUI : MonoBehaviour
     void Start()
     {
         inventory = GetComponent<Inventory>();
-        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         BuildCanvas();
         BuildHud();
         BuildPanel();
@@ -90,7 +86,7 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        UpdateScale();
+        PixelUI.UpdateScale(scaler);
         HandleInput();
         Refresh();
     }
@@ -189,7 +185,7 @@ public class InventoryUI : MonoBehaviour
         if (IsOpen) foreach (var view in panelSlots) RefreshSlot(view);
 
         Vector2 pointer = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
-        Vector2 local = pointer / scaler.scaleFactor;
+        Vector2 local = PixelUI.ScreenToCanvas(pointer, scaler);
 
         handIcon.gameObject.SetActive(IsOpen && !hand.IsEmpty);
         if (!hand.IsEmpty)
@@ -226,26 +222,12 @@ public class InventoryUI : MonoBehaviour
         view.count.text = stack.count > 1 ? stack.count.ToString() : "";
     }
 
-    private void UpdateScale()
-    {
-        // Celociselne zvacsenie ako Pixel Perfect Camera (1080p = 3x, 1440p = 4x).
-        float scale = Mathf.Max(1, Mathf.Floor(Screen.height / (float)ReferenceHeight));
-        if (!Mathf.Approximately(scaler.scaleFactor, scale)) scaler.scaleFactor = scale;
-    }
-
     // ------------------------------------------------------------ stavba UI
 
     private void BuildCanvas()
     {
-        var go = new GameObject("Inventory UI", typeof(RectTransform));
-        canvas = go.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-        canvas.pixelPerfect = true;
-        scaler = go.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        root = (RectTransform)go.transform;
-        UpdateScale();
+        canvas = PixelUI.CreateCanvas("Inventory UI", 100, out scaler);
+        root = (RectTransform)canvas.transform;
     }
 
     private void BuildHud()
@@ -254,7 +236,7 @@ public class InventoryUI : MonoBehaviour
         float width = RowWidth(n) + 2 * slotGap;
         float height = slotSize + 2 * slotGap;
 
-        hud = NewRect("Hotbar", root);
+        hud = PixelUI.NewRect("Hotbar", root);
         hud.anchorMin = hud.anchorMax = new Vector2(0.5f, 0f);
         hud.pivot = new Vector2(0.5f, 0f);
         hud.anchoredPosition = new Vector2(0, hotbarBottomMargin);
@@ -274,13 +256,13 @@ public class InventoryUI : MonoBehaviour
         float gridWidth = RowWidth(cols);
         float bagHeight = rows > 0 ? rows * slotSize + (rows - 1) * slotGap : 0;
 
-        var border = NewImage("Inventory Panel", root, panelBorderColor);
+        var border = PixelUI.NewImage("Inventory Panel", root, panelBorderColor);
         panel = border.rectTransform;
         panel.anchorMin = panel.anchorMax = panel.pivot = new Vector2(0.5f, 0.5f);
         panel.sizeDelta = new Vector2(gridWidth + 2 * padding, padding + slotSize + separator + bagHeight + titleHeight + padding);
-        Stretch(NewImage("Background", panel, panelColor).rectTransform, 1);
+        PixelUI.Stretch(PixelUI.NewImage("Background", panel, panelColor).rectTransform, 1);
 
-        var title = NewText("Title", panel, 9, TextAnchor.MiddleLeft);
+        var title = PixelUI.NewText("Title", panel, 9, TextAnchor.MiddleLeft);
         title.text = "Inventory";
         title.rectTransform.anchorMin = new Vector2(0, 1);
         title.rectTransform.anchorMax = new Vector2(1, 1);
@@ -296,8 +278,8 @@ public class InventoryUI : MonoBehaviour
 
         if (rows > 0)
         {
-            var line = NewImage("Separator", panel, panelBorderColor).rectTransform;
-            SetBottomLeft(line, new Vector2(padding, padding + slotSize + separator / 2f - 0.5f), new Vector2(gridWidth, 1));
+            var line = PixelUI.NewImage("Separator", panel, panelBorderColor).rectTransform;
+            PixelUI.SetBottomLeft(line, new Vector2(padding, padding + slotSize + separator / 2f - 0.5f), new Vector2(gridWidth, 1));
         }
 
         // Batoh nad hotbarom, prvy riadok batohu je hore.
@@ -314,51 +296,51 @@ public class InventoryUI : MonoBehaviour
 
     private void BuildHandAndTooltip()
     {
-        handIcon = NewImage("Held Item", root, Color.white);
+        handIcon = PixelUI.NewImage("Held Item", root, Color.white);
         handIcon.preserveAspect = true;
         var rt = handIcon.rectTransform;
         rt.anchorMin = rt.anchorMax = Vector2.zero;
         rt.pivot = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(iconSize, iconSize);
-        handCount = NewText("Count", rt, 8, TextAnchor.LowerRight);
-        Stretch(handCount.rectTransform, -3);
+        handCount = PixelUI.NewText("Count", rt, 8, TextAnchor.LowerRight);
+        PixelUI.Stretch(handCount.rectTransform, -3);
 
-        var bg = NewImage("Tooltip", root, panelBorderColor);
+        var bg = PixelUI.NewImage("Tooltip", root, panelBorderColor);
         tooltip = bg.rectTransform;
         tooltip.anchorMin = tooltip.anchorMax = Vector2.zero;
         tooltip.pivot = new Vector2(0, 1);
-        Stretch(NewImage("Background", tooltip, panelColor).rectTransform, 1);
-        tooltipText = NewText("Text", tooltip, 8, TextAnchor.MiddleLeft);
+        PixelUI.Stretch(PixelUI.NewImage("Background", tooltip, panelColor).rectTransform, 1);
+        tooltipText = PixelUI.NewText("Text", tooltip, 8, TextAnchor.MiddleLeft);
         tooltipText.horizontalOverflow = HorizontalWrapMode.Overflow;
         tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
-        Stretch(tooltipText.rectTransform, 4);
+        PixelUI.Stretch(tooltipText.rectTransform, 4);
     }
 
     private SlotView CreateSlot(RectTransform parent, int index, Vector2 position, bool showKey)
     {
         var view = new SlotView { index = index };
-        view.border = NewImage($"Slot {index}", parent, slotBorderColor);
+        view.border = PixelUI.NewImage($"Slot {index}", parent, slotBorderColor);
         view.rect = view.border.rectTransform;
-        SetBottomLeft(view.rect, position, new Vector2(slotSize, slotSize));
+        PixelUI.SetBottomLeft(view.rect, position, new Vector2(slotSize, slotSize));
 
-        view.background = NewImage("Background", view.rect, slotColor);
-        Stretch(view.background.rectTransform, 1);
+        view.background = PixelUI.NewImage("Background", view.rect, slotColor);
+        PixelUI.Stretch(view.background.rectTransform, 1);
 
-        view.icon = NewImage("Icon", view.rect, Color.white);
+        view.icon = PixelUI.NewImage("Icon", view.rect, Color.white);
         view.icon.preserveAspect = true;
         var iconRect = view.icon.rectTransform;
         iconRect.anchorMin = iconRect.anchorMax = iconRect.pivot = new Vector2(0.5f, 0.5f);
         iconRect.sizeDelta = new Vector2(iconSize, iconSize);
 
-        view.count = NewText("Count", view.rect, 8, TextAnchor.LowerRight);
-        Stretch(view.count.rectTransform, 2);
+        view.count = PixelUI.NewText("Count", view.rect, 8, TextAnchor.LowerRight);
+        PixelUI.Stretch(view.count.rectTransform, 2);
 
         if (showKey && index < 10)
         {
-            var key = NewText("Key", view.rect, 6, TextAnchor.UpperLeft);
+            var key = PixelUI.NewText("Key", view.rect, 6, TextAnchor.UpperLeft);
             key.text = ((index + 1) % 10).ToString();
             key.color = new Color(1, 1, 1, 0.55f);
-            Stretch(key.rectTransform, 2);
+            PixelUI.Stretch(key.rectTransform, 2);
         }
         return view;
     }
@@ -366,51 +348,4 @@ public class InventoryUI : MonoBehaviour
     // ------------------------------------------------------------ pomocne
 
     private float RowWidth(int n) => n * slotSize + (n - 1) * slotGap;
-
-    private static RectTransform NewRect(string name, Transform parent)
-    {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-        return (RectTransform)go.transform;
-    }
-
-    private static Image NewImage(string name, Transform parent, Color color)
-    {
-        var image = NewRect(name, parent).gameObject.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = false;
-        return image;
-    }
-
-    private Text NewText(string name, Transform parent, int size, TextAnchor alignment)
-    {
-        var text = NewRect(name, parent).gameObject.AddComponent<Text>();
-        text.font = font;
-        text.fontSize = size;
-        text.alignment = alignment;
-        text.color = Color.white;
-        text.raycastTarget = false;
-        text.supportRichText = true;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        var shadow = text.gameObject.AddComponent<Shadow>();
-        shadow.effectColor = new Color(0, 0, 0, 0.8f);
-        shadow.effectDistance = new Vector2(1, -1);
-        return text;
-    }
-
-    private static void Stretch(RectTransform rt, float inset)
-    {
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(inset, inset);
-        rt.offsetMax = new Vector2(-inset, -inset);
-    }
-
-    private static void SetBottomLeft(RectTransform rt, Vector2 position, Vector2 size)
-    {
-        rt.anchorMin = rt.anchorMax = rt.pivot = Vector2.zero;
-        rt.anchoredPosition = position;
-        rt.sizeDelta = size;
-    }
 }

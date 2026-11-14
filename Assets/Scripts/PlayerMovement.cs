@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private InputAction moveAction;
     private Vector2 moveInput;
     private Animator animator;
+    private PlayerInteractor interactor;
 
     void Start()
     {
@@ -17,11 +18,18 @@ public class PlayerMovement : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         moveAction = InputSystem.actions.FindAction("Move");
         animator = GetComponent<Animator>();
+        interactor = GetComponent<PlayerInteractor>();
     }
 
     void Update()
     {
         moveInput = moveAction.ReadValue<Vector2>();
+
+        // Pocas zberu (drzanie E) hrac stoji.
+        if (interactor != null && interactor.IsBusy)
+        {
+            moveInput = Vector2.zero;
+        }
 
         if (moveInput.x != 0f)
         {

@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ART = ROOT / "Assets" / "Art"
-GRID = 32  # velkost tile v pixeloch (1 tile = 32 px = 1 Unity unit)
+GRID = 16  # velkost tile v pixeloch (1 tile = 16 px = 1 Unity unit)
 
 # Paleta pre zaciatok (da sa v Aseprite lubovolne menit).
 PALETTE = [
@@ -49,39 +49,39 @@ def still(*names, duration=100):
 
 # (cesta, sirka, vyska, [(tag, pocet snimok, ms)])
 FILES = [
-    # Postavy: platno 64x64 (2x2 tiles), nohy na spodnom okraji v strede.
+    # Postavy: platno 32x32 (2x2 tiles), nohy na spodnom okraji v strede.
     # Bocne snimky kresli otocene DOPRAVA, dolava sa zrkadli v kode.
-    ("Characters/player.aseprite", 64, 64, anim(("idle", 2), ("walk", 4), ("attack", 3))),
-    ("Characters/zombie.aseprite", 64, 64, anim(("idle", 2), ("walk", 4), ("attack", 3))),
-    ("Characters/sheep.aseprite", 64, 64, anim(("idle", 2), ("walk", 4))),
-    ("Characters/zombie_sheep.aseprite", 64, 64, anim(("idle", 2), ("walk", 4), ("attack", 3))),
+    ("Characters/player.aseprite", 32, 32, anim(("idle", 2), ("walk", 4), ("attack", 3))),
+    ("Characters/zombie.aseprite", 32, 32, anim(("idle", 2), ("walk", 4), ("attack", 3))),
+    ("Characters/sheep.aseprite", 32, 32, anim(("idle", 2), ("walk", 4))),
+    ("Characters/zombie_sheep.aseprite", 32, 32, anim(("idle", 2), ("walk", 4), ("attack", 3))),
 
-    # Objekty: 32x32 = 1 tile, pata objektu na spodnom okraji.
-    ("Objects/tree.aseprite", 64, 96, still("tree", "stump")),
-    ("Objects/rock.aseprite", 32, 32, still("rock")),
-    ("Objects/grass_tuft.aseprite", 32, 32, still("grass")),
-    ("Objects/berry_bush.aseprite", 32, 32, still("full", "empty")),
-    ("Objects/fence.aseprite", 32, 32, still("horizontal", "vertical")),
-    ("Objects/pen_fence.aseprite", 32, 32, still("horizontal", "vertical", "corner")),
-    ("Objects/spikes.aseprite", 32, 32, still("spikes")),
-    ("Objects/chest.aseprite", 32, 32, still("closed", "open")),
-    ("Objects/house.aseprite", 256, 224, still("house")),            # 8x7 tiles, dvere dole v strede
-    ("Objects/crafting_table.aseprite", 64, 64, still("table")),
-    ("Objects/cooking_pot.aseprite", 32, 48, still("idle", "cooking")),
+    # Objekty: 16x16 = 1 tile, pata objektu na spodnom okraji.
+    ("Objects/tree.aseprite", 32, 48, still("tree", "stump")),
+    ("Objects/rock.aseprite", 16, 16, still("rock")),
+    ("Objects/grass_tuft.aseprite", 16, 16, still("grass")),
+    ("Objects/berry_bush.aseprite", 16, 16, still("full", "empty")),
+    ("Objects/fence.aseprite", 16, 16, still("horizontal", "vertical")),
+    ("Objects/pen_fence.aseprite", 16, 16, still("horizontal", "vertical", "corner")),
+    ("Objects/spikes.aseprite", 16, 16, still("spikes")),
+    ("Objects/chest.aseprite", 16, 16, still("closed", "open")),
+    ("Objects/house.aseprite", 128, 112, still("house")),            # 8x7 tiles, dvere dole v strede
+    ("Objects/crafting_table.aseprite", 32, 32, still("table")),
+    ("Objects/cooking_pot.aseprite", 16, 24, still("idle", "cooking")),
 
-    # Tiles: presne 32x32, musia na seba nadvazovat (View > Tiled Mode).
-    ("Tiles/grass.aseprite", 32, 32, still("grass")),
-    ("Tiles/forest_floor.aseprite", 32, 32, still("forest_floor")),
-    ("Tiles/dirt.aseprite", 32, 32, still("dirt")),
-    ("Tiles/path.aseprite", 32, 32, still("path")),
-    ("Tiles/water.aseprite", 32, 32, still("water")),
-    ("Tiles/cliff.aseprite", 32, 32, still("cliff")),  # okraj kopca hore
+    # Tiles: presne 16x16, musia na seba nadvazovat (View > Tiled Mode).
+    ("Tiles/grass.aseprite", 16, 16, still("grass")),
+    ("Tiles/forest_floor.aseprite", 16, 16, still("forest_floor")),
+    ("Tiles/dirt.aseprite", 16, 16, still("dirt")),
+    ("Tiles/path.aseprite", 16, 16, still("path")),
+    ("Tiles/water.aseprite", 16, 16, still("water")),
+    ("Tiles/cliff.aseprite", 16, 16, still("cliff")),  # okraj kopca hore
 
-    # Pozadie nad mapou (vyhlad z kopca). 2048 px = sirka mapy (64 tiles). Kresli od spodneho okraja,
+    # Pozadie nad mapou (vyhlad z kopca). 1024 px = sirka mapy (64 tiles). Kresli od spodneho okraja,
     # hore nechaj priehladne. Vrstvy sa pri pohybe kamery posuvaju roznou rychlostou.
-    ("Background/sky.aseprite", 2048, 352, still("sky")),             # obloha + zapadajuce slnko
-    ("Background/mountains.aseprite", 2048, 224, still("mountains")), # hory, vacsie vlavo
-    ("Background/city.aseprite", 2048, 160, still("city")),            # mesto vlavo + kopce
+    ("Background/sky.aseprite", 1024, 176, still("sky")),             # obloha + zapadajuce slnko
+    ("Background/mountains.aseprite", 1024, 112, still("mountains")), # hory, vacsie vlavo
+    ("Background/city.aseprite", 1024, 80, still("city")),            # mesto vlavo + kopce
 ]
 
 
@@ -145,7 +145,7 @@ def build(width, height, tags):
         0,                # transparentny index palety
         len(PALETTE),
         1, 1,             # pomer stran pixelu
-        0, 0, GRID, GRID, # mriezka 16x16
+        0, 0, GRID, GRID, # mriezka = 1 tile
     )
     assert len(header) == 128
     return header + body
