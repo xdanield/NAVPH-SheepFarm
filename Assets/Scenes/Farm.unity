@@ -2558,7 +2558,7 @@ GameObject:
   - component: {fileID: 567169964}
   m_Layer: 0
   m_Name: ZombieSpawn_11
-  m_TagString: Untagged
+  m_TagString: ZombieLane
   m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4019,7 +4019,7 @@ GameObject:
   - component: {fileID: 925164432}
   m_Layer: 0
   m_Name: ZombieSpawn_17
-  m_TagString: Untagged
+  m_TagString: ZombieLane
   m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4699,7 +4699,7 @@ GameObject:
   - component: {fileID: 993663270}
   m_Layer: 0
   m_Name: ZombieSpawn_23
-  m_TagString: Untagged
+  m_TagString: ZombieLane
   m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35148,11 +35148,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 73712857761028402, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.13
+      value: 1.67
       objectReference: {fileID: 0}
     - target: {fileID: 73712857761028402, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.91
+      value: 11.57
       objectReference: {fileID: 0}
     - target: {fileID: 73712857761028402, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -35193,8 +35193,39 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6431272298626610446, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2103844840}
   m_SourcePrefab: {fileID: 100100000, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
+--- !u!1 &2103844839 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6431272298626610446, guid: 2a7a3cc51ea7dcb4b9d98e9e9578382f, type: 3}
+  m_PrefabInstance: {fileID: 2103844838}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2103844840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2103844839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be5d8f81c7d75954498c26da271f47d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAI
+  moveSpeed: 1.5
+  laneSteering: 0.5
+  aggroRange: 2
+  giveUpRange: 3.5
+  stopDistance: 0.6
+  blockCheckDistance: 0.6
+  blockCheckRadius: 0.25
+  feetHeight: 0.15
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1001 &2104701323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35735,11 +35766,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4069471455186630519, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.5
+      value: 1.39
       objectReference: {fileID: 0}
     - target: {fileID: 4069471455186630519, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.5
+      value: 17.66
       objectReference: {fileID: 0}
     - target: {fileID: 4069471455186630519, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -35776,8 +35807,39 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1486752748968821707}
   m_SourcePrefab: {fileID: 100100000, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+--- !u!1 &1486752748968821706 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 663308612698045302, guid: 9d067eb9ef43e96439660d72aa7e39e1, type: 3}
+  m_PrefabInstance: {fileID: 1486752748968821705}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1486752748968821707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486752748968821706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be5d8f81c7d75954498c26da271f47d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAI
+  moveSpeed: 1.5
+  laneSteering: 0.5
+  aggroRange: 2
+  giveUpRange: 3.5
+  stopDistance: 0.6
+  blockCheckDistance: 0.6
+  blockCheckRadius: 0.25
+  feetHeight: 0.15
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1001 &8008156035666757273
 PrefabInstance:
   m_ObjectHideFlags: 0

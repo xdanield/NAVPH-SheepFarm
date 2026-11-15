@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4170732701182197195}
   - component: {fileID: 214996099711338734}
   - component: {fileID: 8460584170740599993}
+  - component: {fileID: 1835263424647649705}
   m_Layer: 6
   m_Name: Zombie Sheep
   m_TagString: Untagged
@@ -212,6 +213,29 @@ MonoBehaviour:
   playerDamage: 1
   range: 0.8
   cooldown: 1.5
+--- !u!114 &1835263424647649705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6431272298626610446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be5d8f81c7d75954498c26da271f47d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAI
+  moveSpeed: 1.5
+  laneSteering: 0.5
+  aggroRange: 2
+  giveUpRange: 3.5
+  stopDistance: 0.6
+  blockCheckDistance: 0.6
+  blockCheckRadius: 0.25
+  feetHeight: 0.15
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1 &8457880020757495723
 GameObject:
   m_ObjectHideFlags: 0

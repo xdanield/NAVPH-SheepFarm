@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2641758029891247606}
   - component: {fileID: 8460520640237278876}
   - component: {fileID: 4554804349430434769}
+  - component: {fileID: 4361924290709955683}
   m_Layer: 6
   m_Name: Zombie
   m_TagString: Untagged
@@ -212,6 +213,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 569c0523ae27c584a8be8048e5a78a71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DestroyOnDeath
+--- !u!114 &4361924290709955683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663308612698045302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be5d8f81c7d75954498c26da271f47d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZombieAI
+  moveSpeed: 1.5
+  laneSteering: 0.5
+  aggroRange: 2
+  giveUpRange: 3.5
+  stopDistance: 0.6
+  blockCheckDistance: 0.6
+  blockCheckRadius: 0.25
+  feetHeight: 0.15
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1 &7013864381594401960
 GameObject:
   m_ObjectHideFlags: 0
