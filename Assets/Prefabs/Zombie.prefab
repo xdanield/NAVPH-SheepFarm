@@ -230,6 +230,11 @@ MonoBehaviour:
   aggroRange: 2
   giveUpRange: 3.5
   stopDistance: 0.6
+  sheepSightRange: 5
+  grabRange: 1
+  sheepLayers:
+    serializedVersion: 2
+    m_Bits: 256
   blockCheckDistance: 0.6
   blockCheckRadius: 0.25
   feetHeight: 0.15

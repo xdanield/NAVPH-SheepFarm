@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 605354205272263047}
   - component: {fileID: 3516585707175349773}
   - component: {fileID: 3709921308738639425}
+  - component: {fileID: 6251378530375050196}
   m_Layer: 8
   m_Name: Sheep
   m_TagString: Untagged
@@ -307,3 +308,16 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6251378530375050196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6431272298626610446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c10a4595332c7b458f92dfac2e2e2a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabbableSheep
+  holdersNeeded: 2

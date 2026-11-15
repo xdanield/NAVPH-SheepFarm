@@ -111,7 +111,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 100
   m_LinearDamping: 3
   m_AngularDamping: 0.05
   m_GravityScale: 0
@@ -230,9 +230,14 @@ MonoBehaviour:
   aggroRange: 2
   giveUpRange: 3.5
   stopDistance: 0.6
+  sheepSightRange: 5
+  grabRange: 1
+  sheepLayers:
+    serializedVersion: 2
+    m_Bits: 256
   blockCheckDistance: 0.6
   blockCheckRadius: 0.25
-  feetHeight: 0.15
+  feetHeight: 0.59
   obstacleLayers:
     serializedVersion: 2
     m_Bits: 512
