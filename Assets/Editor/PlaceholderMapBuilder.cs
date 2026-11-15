@@ -498,7 +498,7 @@ public static partial class PlaceholderMapBuilder
         // Body: spawn zombie v lese, start hraca pri dverach, vychod na Explore hore na ceste.
         var points = Child(root, "Points");
         foreach (int lane in ZombieLanes)
-            Marker(points, $"ZombieSpawn_{lane}", new Vector3(1.5f, lane + 0.5f), 2);
+            Marker(points, $"ZombieSpawn_{lane}", new Vector3(1.5f, lane + 0.5f), 2).tag = "ZombieLane"; // ZombieAI hlada drahy podla tagu
         Marker(points, "PlayerStart", new Vector3(HouseDoor.x, HouseDoor.y - 2.5f), 3);
         var exit = Marker(points, "ExploreExit", new Vector3(ExitX + 0.5f, Height - 1f), 5);
         var trigger = exit.AddComponent<BoxCollider2D>();

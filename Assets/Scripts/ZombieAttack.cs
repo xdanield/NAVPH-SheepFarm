@@ -24,7 +24,6 @@ public class ZombieAttack : MonoBehaviour
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
-            return;
         }
 
         if (playerHealth == null || playerHealth.IsDead) return;
@@ -32,8 +31,16 @@ public class ZombieAttack : MonoBehaviour
         float distance = Vector2.Distance(transform.position, playerHealth.transform.position);
         if (distance <= range)
         {
-            playerHealth.TakeDamage(playerDamage);
-            cooldownTimer = cooldown;
+            Attack(playerHealth);
         }
+    }
+
+    public void Attack(Health target)
+    {
+        if (target == null || target.IsDead || cooldownTimer > 0f) return;
+
+        int damage = target.CompareTag("Player") ? playerDamage : buildingDamage;
+        target.TakeDamage(damage);
+        cooldownTimer = cooldown;
     }
 }

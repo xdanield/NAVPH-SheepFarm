@@ -17,11 +17,11 @@ Kto si berie task, napíše to do skupiny („robím P1-05“). ID tasku dávajt
 Hrateľné jadro hry. Stačí placeholder grafika. Poradie je zhruba také, v akom to dáva zmysel robiť.
 
 - [ ] **P1-01 Mapa** – tilemap: farma s ohradou vpravo, les vľavo, okraje mapy s collidermi - ADI
-- [ ] **P1-02 Ovce v ohrade** – na štarte 10 oviec, túlajú sa vnútri ohrady
+- [x] **P1-02 Ovce v ohrade** – na štarte 10 oviec, túlajú sa vnútri ohrady
 - [x] **P1-03 HP hráča** – 4 srdcia, hryznutie uberie 1 srdce, smrť = game over
 - [x] **P1-04 Boj nožom** – ľavý klik, 10 dmg, dosah 0,4 m, cooldown 2 s; zombie má 100 HP
-- [ ] **P1-05 Zombie AI** – algoritmus, spawn vľavo, idú k najbližšej ovci a obchádzajú prekážky (NavMeshPlus); hráča napadnú, len keď je blízko
-- [ ] **P1-06 Ohrada s HP** – 200 HP, zombie do nej búchajú po 10
+- [x] **P1-05 Zombie AI** – algoritmus, spawn vľavo, pohyb pomaly vo svojej linke, zastavenie o obranu, male nasledovanie hrača a chytanie ovce
+- [x] **P1-06 Ohrada s HP** – 200 HP, zombie do nej búchajú po 10
 - [ ] **P1-07 Odnášanie oviec** – 2 zombie pri ovci ju odnesú (stačí, že zmiznú)
 - [ ] **P1-08 Noc vo vlnách** – 2–3 vlny; 10 zombie, +2 každú noc, +1 za každých 10 oviec nad 10; noc končí, keď zombie zmiznú, nie časovačom
 - [ ] **P1-09 Zber surovín** – stromy, kamene, tráva cez E (drevo, kameň, vlákno)
