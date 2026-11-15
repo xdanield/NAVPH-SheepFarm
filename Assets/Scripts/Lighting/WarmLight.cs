@@ -44,7 +44,8 @@ public class WarmLight : MonoBehaviour
         if (light2D == null) return;
         float on = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(turnOn.x, turnOn.y, DayNightLighting.Night));
         float noise = Application.isPlaying ? Mathf.PerlinNoise(seed, Time.time * flickerSpeed) * 2f - 1f : 0f;
+        // Len intenzita, Light2D.enabled nemenime: zapinanie pocas nacitania sceny (Play bez Domain Reload)
+        // ho v URP zaregistruje dvakrat a po zniceni ostane v zozname -> MissingReferenceException.
         light2D.intensity = intensity * on * (1f + noise * flicker);
-        light2D.enabled = on > 0.001f;
     }
 }

@@ -19,6 +19,8 @@ GameObject:
   - component: {fileID: 4828053918734067748}
   - component: {fileID: 7079667775838529675}
   - component: {fileID: 4732399045582120879}
+  - component: {fileID: 1995743694146530988}
+  - component: {fileID: 3007597937501343431}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -300,3 +302,33 @@ MonoBehaviour:
   slotHoverColor: {r: 0.27058825, g: 0.23921569, b: 0.33333334, a: 0.9411765}
   slotBorderColor: {r: 0.2901961, g: 0.25882354, b: 0.34509805, a: 1}
   selectedBorderColor: {r: 0.9490196, g: 0.75686276, b: 0.30588236, a: 1}
+--- !u!114 &1995743694146530988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf6c4581a0a6cc441bae4d0cd112ee50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractor
+  range: 0.9
+  facingBonus: 0.35
+  feetOffset: {x: 0, y: 0.15}
+--- !u!114 &3007597937501343431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3da3dd0046632cb4db271456c93b0c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionUI
+  barHeight: 3
+  popupDuration: 1.1
+  popupRise: 16

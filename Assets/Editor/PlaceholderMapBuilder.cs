@@ -589,12 +589,13 @@ public static partial class PlaceholderMapBuilder
                 sr.spriteSortPoint = SpriteSortPoint.Pivot;
             }
 
-            foreach (var old in root.GetComponents<Collider2D>().Where(c => !(c is BoxCollider2D)))
-                UnityEngine.Object.DestroyImmediate(old);
-            var box = root.GetComponent<BoxCollider2D>();
-            if (box == null) box = root.AddComponent<BoxCollider2D>();
-            box.size = size;
-            box.offset = offset;
+            // Collider len ked chyba. Existujuci (rucne doladeny v prefabe) nechame tak.
+            if (root.GetComponent<Collider2D>() == null)
+            {
+                var box = root.AddComponent<BoxCollider2D>();
+                box.size = size;
+                box.offset = offset;
+            }
 
             PrefabUtility.SaveAsPrefabAsset(root, path);
             PrefabUtility.UnloadPrefabContents(root);
