@@ -102,6 +102,9 @@ public static partial class PlaceholderMapBuilder
         new PrefabDef { Name = "House", Aseprite = "Objects/house", Paint = Px.House, ColliderSize = new Vector2(7f, 3.5f), ColliderOffset = new Vector2(0, 1.75f) },
         new PrefabDef { Name = "CraftingTable", Aseprite = "Objects/crafting_table", Paint = Px.CraftingTable, ColliderSize = new Vector2(1.8f, 0.6f), ColliderOffset = new Vector2(0, 0.3f) },
         new PrefabDef { Name = "CookingPot", Aseprite = "Objects/cooking_pot", Paint = Px.CookingPot, ColliderSize = new Vector2(0.8f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
+        // Zbieratelne veci z Explore (les: huby, ruiny: srot). Kym nie je .aseprite, maju placeholder.
+        new PrefabDef { Name = "Mushroom", Aseprite = "Objects/mushroom", Paint = Px.Mushroom, ColliderSize = new Vector2(0.6f, 0.4f), ColliderOffset = new Vector2(0, 0.2f), Trigger = true },
+        new PrefabDef { Name = "ScrapPile", Aseprite = "Objects/scrap_pile", Paint = Px.ScrapPile, ColliderSize = new Vector2(0.9f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
     };
 
     // Follow: ako velmi sa vrstva hybe s kamerou (1 = nekonecne daleko). Order: co je vpredu.
@@ -159,6 +162,7 @@ public static partial class PlaceholderMapBuilder
         PlaceActors();
         SetupCamera();
         SetupSorting();
+        LinkLocations(); // vychod hore na ceste -> Explore (ak uz je postavene), PlaceholderMapBuilder.Explore.cs
 
         EditorSceneManager.MarkSceneDirty(scene);
         Debug.Log($"Mapa {map.width}x{map.height} (seed {map.seed}) hotova. Nezabudni ulozit scenu (Ctrl+S).");
@@ -319,10 +323,10 @@ public static partial class PlaceholderMapBuilder
     [Serializable] class MapProp { public string sprite; public int frame, order; public float x, y, cw, ch; public bool collider, flip; }
 
     /// Spusti Python generator mapy. Vrati false, ak sa nepodarilo (detaily v Console).
-    static bool RunGenerator()
+    static bool RunGenerator(string generator = GeneratorScript)
     {
         string root = Path.GetDirectoryName(Application.dataPath);
-        string script = Path.Combine(root, GeneratorScript);
+        string script = Path.Combine(root, generator);
         foreach (string exe in new[] { "python", "py", "python3" })
         {
             try
@@ -447,7 +451,7 @@ public static partial class PlaceholderMapBuilder
     }
 
     /// Neviditelne steny okolo mapy, aby nikto nevysiel von.
-    static void BuildEdges(Transform root)
+    static void BuildEdges(Transform root, int w = Width, int h = Height)
     {
         var edges = Child(root, "MapEdges");
         void Wall(string name, Vector2 center, Vector2 size)
@@ -457,10 +461,10 @@ public static partial class PlaceholderMapBuilder
             go.transform.position = center;
             go.AddComponent<BoxCollider2D>().size = size;
         }
-        Wall("Left", new Vector2(-0.5f, Height / 2f), new Vector2(1, Height + 2));
-        Wall("Right", new Vector2(Width + 0.5f, Height / 2f), new Vector2(1, Height + 2));
-        Wall("Bottom", new Vector2(Width / 2f, -0.5f), new Vector2(Width + 2, 1));
-        Wall("Top", new Vector2(Width / 2f, Height + 0.5f), new Vector2(Width + 2, 1));
+        Wall("Left", new Vector2(-0.5f, h / 2f), new Vector2(1, h + 2));
+        Wall("Right", new Vector2(w + 0.5f, h / 2f), new Vector2(1, h + 2));
+        Wall("Bottom", new Vector2(w / 2f, -0.5f), new Vector2(w + 2, 1));
+        Wall("Top", new Vector2(w / 2f, h + 0.5f), new Vector2(w + 2, 1));
     }
 
     // ---------------------------------------------------------------- objekty
@@ -941,6 +945,34 @@ public static partial class PlaceholderMapBuilder
             px.Rect(7, 4, 8, 7, "f2a65a");
             px.Ellipse(8, 11, 6.5f, 5, "4a4a55");
             px.Rect(2, 14, 13, 15, "7c7c88");
+            px.Outline();
+            return px;
+        }
+
+        public static Px Mushroom()
+        {
+            var px = new Px(16, 16);
+            px.Rect(4, 1, 5, 4, "e8dcc8");          // maly hribik vlavo
+            px.Ellipse(4.5f, 5.5f, 3, 2, "c0392b");
+            px.Rect(9, 1, 11, 6, "e8dcc8");         // velky v strede
+            px.Ellipse(10, 8, 5, 3, "c0392b");
+            px.Rect(8, 9, 8, 9, "ffffff");          // bodky
+            px.Rect(11, 8, 11, 8, "ffffff");
+            px.Rect(3, 6, 3, 6, "ffffff");
+            px.Outline();
+            return px;
+        }
+
+        public static Px ScrapPile()
+        {
+            var px = new Px(16, 16);
+            px.Ellipse(8, 3.5f, 7, 3.5f, "5d4a3a");  // hlina pod tym
+            px.Rect(2, 3, 9, 6, "7c7c88");          // plech
+            px.Rect(3, 6, 8, 6, "b8b8c0");
+            px.Rect(9, 2, 13, 8, "8a5a3a");         // hrdzava tyc / kus stroja
+            px.Rect(10, 7, 12, 8, "c07a4a");
+            px.Rect(5, 7, 6, 10, "4a4a55");         // trubka
+            px.Rect(5, 10, 7, 10, "7c7c88");
             px.Outline();
             return px;
         }

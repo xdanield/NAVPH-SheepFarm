@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3516585707175349773}
   - component: {fileID: 3709921308738639425}
   - component: {fileID: 6251378530375050196}
+  - component: {fileID: 2697609870710670825}
   m_Layer: 8
   m_Name: Sheep
   m_TagString: Untagged
@@ -321,3 +322,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableSheep
   holdersNeeded: 2
+--- !u!114 &2697609870710670825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6431272298626610446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 3
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  lampHeight: 2.5
+  maxLength: 2.2
+  contactShadow: 1
+  contactAlpha: 0.3
+  contactWidth: 0.6

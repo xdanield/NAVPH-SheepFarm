@@ -12,6 +12,10 @@ public class WarmLight : MonoBehaviour
 {
     static readonly List<WarmLight> all = new List<WarmLight>();
 
+    /// <summary>Vsetky zapnute teple svetla (cita ich napr. SpriteShadow).</summary>
+    public static IReadOnlyList<WarmLight> All => all;
+    public Light2D Light => light2D;
+
     [SerializeField] private float intensity = 1.2f;
     [Tooltip("Ako velmi blika (0 = vobec, 0.3 = ohen).")]
     [Range(0f, 0.5f)] [SerializeField] private float flicker = 0.1f;

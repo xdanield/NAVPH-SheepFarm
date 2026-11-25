@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8460520640237278876}
   - component: {fileID: 4554804349430434769}
   - component: {fileID: 4361924290709955683}
+  - component: {fileID: 8680153173830010621}
   m_Layer: 6
   m_Name: Zombie
   m_TagString: Untagged
@@ -381,3 +382,24 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
   m_PrefabInstance: {fileID: 5855255609075187954}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8680153173830010621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663308612698045302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 3
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  lampHeight: 2.5
+  maxLength: 2.2
+  contactShadow: 1
+  contactAlpha: 0.3
+  contactWidth: 0.6

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4732399045582120879}
   - component: {fileID: 1995743694146530988}
   - component: {fileID: 3007597937501343431}
+  - component: {fileID: 1128295917864537004}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -332,3 +333,24 @@ MonoBehaviour:
   barHeight: 3
   popupDuration: 1.1
   popupRise: 16
+--- !u!114 &1128295917864537004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7841681221009350379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 3
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  lampHeight: 2.5
+  maxLength: 2.2
+  contactShadow: 1
+  contactAlpha: 0.3
+  contactWidth: 0.6
