@@ -38,7 +38,7 @@ public class DayNightLighting : MonoBehaviour
     [Tooltip("Vyska slnka na zaciatku a konci dna (stupne). Nizsie = tien dlhsie ostava dlhy.")]
     [Range(5f, 60f)] [SerializeField] private float startElevation = 30f;
     [Tooltip("Najdlhsi tien od slnka v nasobkoch vysky postavy (rano/vecer).")]
-    [SerializeField] private float maxSunShadowLength = 1.6f;
+    [SerializeField] private float maxSunShadowLength = 1.2f;
     [Tooltip("Ked sunMoves je vypnute: pevny tien (smer aj dlzka, x = do strany, y > 0 = dozadu za postavu).")]
     [SerializeField] private Vector2 sunShadowDirection = new Vector2(0.8f, 0.6f);
     [Tooltip("Pohlad zhora pod uhlom: zem je skratena, tien smerom hore/dole je kratsi ako do strany.")]
@@ -46,6 +46,20 @@ public class DayNightLighting : MonoBehaviour
     [Range(0f, 1f)] [SerializeField] private float sunShadowStrength = 0.8f;
     [Tooltip("Testovanie v Play: >= 0 natvrdo nastavi cas slnka (0 = rano, 0.5 = poludnie, 1 = vecer). -1 = podla cyklu.")]
     [Range(-1f, 1f)] [SerializeField] private float debugSunTime = -1f;
+
+    [Header("Tiene - celkovy vzhlad (vsetky SpriteShadow naraz)")]
+    [Tooltip("Celkova tmavost vsetkych tienov (nasobi maxAlpha na objektoch). Mensie = jemnejsie tiene.")]
+    [Range(0f, 1f)] [SerializeField] private float shadowOpacity = 0.6f;
+    [Tooltip("Ako vysoko visia lampy a ohen (v jednotkach). Vyssie = kratsie tiene od lamp.")]
+    [SerializeField] private float lampHeight = 4f;
+    [Tooltip("Najdlhsi tien od lampy v nasobkoch vysky postavy (dlzka sa k nemu blizi plynulo).")]
+    [SerializeField] private float lampShadowMaxLength = 1.1f;
+
+    // Staticke hodnoty pre SpriteShadow (default plati aj bez DayNightLighting v scene).
+    public static float ShadowOpacity { get; private set; } = 0.6f;
+    public static float LampHeight { get; private set; } = 4f;
+    public static float LampShadowMaxLength { get; private set; } = 1.1f;
+    public static float GroundTilt { get; private set; } = 0.6f;
 
     /// <summary>Kam sa posunie hlava tiena na 1 jednotku vysky postavy (smer * dlzka).</summary>
     public static Vector2 SunShadow { get; private set; }
@@ -69,6 +83,11 @@ public class DayNightLighting : MonoBehaviour
     /// <param name="t">Cast dna: 0 = rano, 0.5 = poludnie, 1 = vecer.</param>
     void UpdateSun(float t)
     {
+        ShadowOpacity = shadowOpacity;
+        LampHeight = Mathf.Max(0.5f, lampHeight);
+        LampShadowMaxLength = Mathf.Max(0.1f, lampShadowMaxLength);
+        GroundTilt = groundTilt;
+
         float daylight = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.45f, 0.8f, Night));
         Vector2 shadow;
 

@@ -299,7 +299,7 @@ class Wilds:
     def add_prop(self, sprite, frame, x, y, r, collider=None, shadow=None, flip=False):
         x, y = round(x * 16) / 16, round(y * 16) / 16
         self.taken.append((x, y, r))
-        if shadow is not None:
+        if shadow is not None and F.BAKED_SHADOWS:
             self.props.append(dict(sprite="Props/shadows", frame=shadow, x=x, y=y - 0.25, order=SHADOW_ORDER,
                                    collider=False, cw=0, ch=0, flip=False))
         self.props.append(dict(sprite=sprite, frame=frame, x=x, y=y, order=0, collider=collider is not None,

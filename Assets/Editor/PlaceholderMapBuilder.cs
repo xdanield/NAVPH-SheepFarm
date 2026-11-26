@@ -416,6 +416,7 @@ public static partial class PlaceholderMapBuilder
         var cache = new Dictionary<string, Sprite[]>();
         foreach (var p in map.props)
         {
+            if (p.sprite == LightingSetup.BakedShadowSprite) continue; // tiene robi SpriteShadow
             if (!cache.TryGetValue(p.sprite, out var sprites))
             {
                 var all = AssetDatabase.LoadAllAssetsAtPath($"Assets/Art/{p.sprite}.aseprite").OfType<Sprite>().ToArray();
@@ -433,6 +434,7 @@ public static partial class PlaceholderMapBuilder
             sr.sortingOrder = p.order;
             sr.spriteSortPoint = SpriteSortPoint.Pivot;
             sr.flipX = p.flip;
+            LightingSetup.AddPropShadow(go, go.name);
             if (p.collider)
             {
                 var col = go.AddComponent<BoxCollider2D>();
@@ -925,26 +927,28 @@ public static partial class PlaceholderMapBuilder
 
         public static Px CraftingTable()
         {
+            // y od 1: spodny riadok ostane na obrys, inak je spodok useknuty
             var px = new Px(32, 32);
-            px.Rect(3, 0, 5, 12, "5d3a24");
-            px.Rect(26, 0, 28, 12, "5d3a24");
-            px.Rect(1, 12, 30, 18, "8b5a2b");
-            px.Rect(1, 18, 30, 19, "c08552");
-            px.Rect(6, 20, 13, 21, "b8b8c0");  // pila
-            px.Rect(18, 20, 19, 25, "5d3a24"); // kladivo
-            px.Rect(16, 25, 21, 27, "7c7c88");
+            px.Rect(3, 1, 5, 13, "5d3a24");
+            px.Rect(26, 1, 28, 13, "5d3a24");
+            px.Rect(1, 13, 30, 19, "8b5a2b");
+            px.Rect(1, 19, 30, 20, "c08552");
+            px.Rect(6, 21, 13, 22, "b8b8c0");  // pila
+            px.Rect(18, 21, 19, 26, "5d3a24"); // kladivo
+            px.Rect(16, 26, 21, 28, "7c7c88");
             px.Outline();
             return px;
         }
 
         public static Px CookingPot()
         {
+            // y od 1: spodny riadok ostane na obrys, inak je spodok useknuty
             var px = new Px(16, 24);
-            px.Rect(3, 0, 12, 2, "5d3a24");     // drevo
-            px.Rect(5, 2, 10, 5, "e07b1f");     // ohen
-            px.Rect(7, 4, 8, 7, "f2a65a");
-            px.Ellipse(8, 11, 6.5f, 5, "4a4a55");
-            px.Rect(2, 14, 13, 15, "7c7c88");
+            px.Rect(3, 1, 12, 3, "5d3a24");     // drevo
+            px.Rect(5, 3, 10, 6, "e07b1f");     // ohen
+            px.Rect(7, 5, 8, 8, "f2a65a");
+            px.Ellipse(8, 12, 6.5f, 5, "4a4a55");
+            px.Rect(2, 15, 13, 16, "7c7c88");
             px.Outline();
             return px;
         }

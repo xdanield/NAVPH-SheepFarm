@@ -338,8 +338,6 @@ MonoBehaviour:
   maxAlpha: 0.5
   footOffset: 0.05
   sortingOrder: -50
-  lampHeight: 2.5
-  maxLength: 2.2
   contactShadow: 1
   contactAlpha: 0.3
   contactWidth: 0.6

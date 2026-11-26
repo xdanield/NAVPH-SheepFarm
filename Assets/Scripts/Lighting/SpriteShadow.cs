@@ -7,7 +7,8 @@ using UnityEngine;
 /// Tien je kopia spritu, cierna a priesvitna, ktora sa NEOTACA, ale SKOSI (shear):
 /// nohy ostavaju na mieste a vodorovne, hlava sa posunie smerom od svetla. Kazde svetlo
 /// vrha vlastny tien (max. maxShadows) - medzi dvoma lampami ma postava dva tiene.
-///  - lampy/ohen (WarmLight): dlzka podla vzdialenosti a vysky lampy (podobne trojuholniky)
+///  - lampy/ohen (WarmLight): dlzka podla vzdialenosti a vysky lampy (podobne trojuholniky);
+///    svetlo vnutri vlastneho spritu (lampa na dome) sa ignoruje
 ///  - slnko: smer a dlzka z DayNightLighting (SunShadow)
 /// Pod nohami je navyse maly kontaktny tien (elipsa), aby postava "stala na zemi" aj vtedy,
 /// ked svieti svetlo presne zboku a plochy sprite vrha len tenku ciaru.
@@ -20,20 +21,19 @@ public class SpriteShadow : MonoBehaviour
     [Header("Vrhane tiene")]
     [Tooltip("Kolko svetiel naraz moze vrhat tien (najsilnejsie vyhravaju).")]
     [Range(1, 4)] [SerializeField] private int maxShadows = 3;
-    [Tooltip("Maximalna tmavost tiena (0 = neviditelny, 1 = ciste cierny).")]
+    [Tooltip("Tmavost tiena tohto objektu (0 = neviditelny, 1 = ciste cierny). Este sa nasobi " +
+             "DayNightLighting.shadowOpacity - tam sa nastavuju tiene celkovo, aj vyska lamp a dlzka tienov.")]
     [Range(0f, 1f)] [SerializeField] private float maxAlpha = 0.5f;
     [Tooltip("Posun linie noh od spodku spritu (ak ma sprite pod nohami prazdne pixely).")]
     [SerializeField] private float footOffset = 0.05f;
     [Tooltip("Sorting order tiena: nad zemou (-300..-85), pod postavami (0).")]
     [SerializeField] private int sortingOrder = -50;
-
-    [Header("Lampy a ohen")]
-    [Tooltip("Ako vysoko visi svetlo (v jednotkach). Nizsie = dlhsie tiene.")]
-    [SerializeField] private float lampHeight = 2.5f;
-    [Tooltip("Najdlhsi tien v nasobkoch vysky postavy.")]
-    [SerializeField] private float maxLength = 2.2f;
+    [Tooltip("Svetlo, ktore lezi vnutri spritu (lampa na dome, ohen pod hrncom), patri k objektu a tien od neho nevrha.")]
+    [SerializeField] private bool ignoreLightsOnSelf = true;
 
     [Header("Kontaktny tien pod nohami")]
+    [Tooltip("Postavy: kruzok stale. Stromy, kamene, predmety: contactAlpha = 0, kruzok len na poludnie, " +
+             "inak by popri vrhanom tieni vyzeral ako druhy tien.")]
     [SerializeField] private bool contactShadow = true;
     [Range(0f, 1f)] [SerializeField] private float contactAlpha = 0.3f;
     [Tooltip("Sirka elipsy v nasobkoch sirky spritu.")]
@@ -101,7 +101,9 @@ public class SpriteShadow : MonoBehaviour
 
     void LateUpdate()
     {
-        bool visible = body.enabled && body.sprite != null;
+        // Mimo kamery nic nepocitame (v Explore su stovky stromov). Tien moze siahat za sprite,
+        // preto je okolo obrazovky rezerva (offscreenMargin).
+        bool visible = body.enabled && body.sprite != null && NearCamera(body.bounds);
         if (contact != null) contact.enabled = visible;
         if (!visible)
         {
@@ -136,7 +138,7 @@ public class SpriteShadow : MonoBehaviour
             v.renderer.sprite = body.sprite;
             v.renderer.flipX = body.flipX;
             ApplyShear(v, foot, casters[i].shear);
-            v.renderer.color = new Color(0f, 0f, 0f, maxAlpha * casters[i].strength * body.color.a);
+            v.renderer.color = new Color(0f, 0f, 0f, maxAlpha * DayNightLighting.ShadowOpacity * casters[i].strength * body.color.a);
         }
     }
 
@@ -147,6 +149,7 @@ public class SpriteShadow : MonoBehaviour
         foreach (var w in WarmLight.All)
         {
             if (w.Light == null || w.transform.IsChildOf(transform)) continue; // vlastny lampas nie
+            if (ignoreLightsOnSelf && OnSelf(w.transform.position)) continue;  // lampa na stene, ohen pod hrncom
             float radius = w.Light.pointLightOuterRadius;
             if (radius <= 0f) continue;
 
@@ -158,7 +161,13 @@ public class SpriteShadow : MonoBehaviour
             if (strength < 0.02f) continue;
 
             // Podobne trojuholniky: hlava vo vyske h je od lampy dalej o away * h / vyskaLampy.
-            Vector2 shear = Vector2.ClampMagnitude(away / Mathf.Max(0.1f, lampHeight), maxLength);
+            // Dlzka sa k maximu blizi plynulo (ziadne nahle zastavenie) a dlhy tien je slabsi.
+            float maxLen = DayNightLighting.LampShadowMaxLength;
+            float len = away.magnitude / DayNightLighting.LampHeight;
+            len = len / (1f + len / maxLen);
+            Vector2 dir = away.normalized * len;
+            Vector2 shear = new Vector2(dir.x, dir.y * DayNightLighting.GroundTilt); // zem je zhora skratena
+            strength *= Mathf.Lerp(1f, 0.55f, len / maxLen);
             casters.Add(new Caster { shear = shear, strength = strength });
         }
 
@@ -167,6 +176,33 @@ public class SpriteShadow : MonoBehaviour
             casters.Add(new Caster { shear = DayNightLighting.SunShadow, strength = sun });
 
         casters.Sort((x, y) => y.strength.CompareTo(x.strength));
+    }
+
+    const float offscreenMargin = 6f;
+    static Rect cameraRect;
+    static int cameraRectFrame = -1;
+
+    static bool NearCamera(Bounds b)
+    {
+        if (cameraRectFrame != Time.frameCount)
+        {
+            cameraRectFrame = Time.frameCount;
+            var cam = Camera.main;
+            if (cam == null || !cam.orthographic) cameraRect = new Rect(-1e6f, -1e6f, 2e6f, 2e6f);
+            else
+            {
+                float h = cam.orthographicSize + offscreenMargin, w = cam.orthographicSize * cam.aspect + offscreenMargin;
+                Vector2 c = cam.transform.position;
+                cameraRect = new Rect(c.x - w, c.y - h, w * 2f, h * 2f);
+            }
+        }
+        return b.max.x >= cameraRect.xMin && b.min.x <= cameraRect.xMax && b.max.y >= cameraRect.yMin && b.min.y <= cameraRect.yMax;
+    }
+
+    bool OnSelf(Vector2 p)
+    {
+        Bounds b = body.bounds;
+        return p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y && p.y <= b.max.y;
     }
 
     /// <summary>
