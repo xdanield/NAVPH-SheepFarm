@@ -33,7 +33,7 @@ public class PlayerAttack : MonoBehaviour
 
         if (Time.timeScale == 0f) return;
         
-        if (BuildMode.IsActive) return;
+        if (BuildMode.IsActive || BuildWheel.WasOpenThisFrame) return;
 
         if (attackAction.WasPressedThisFrame())
         {

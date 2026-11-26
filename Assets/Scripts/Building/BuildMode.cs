@@ -19,8 +19,6 @@ public class BuildMode : MonoBehaviour
     [Header("Placement rules")]
     [SerializeField] private LayerMask blockingLayers;
     [SerializeField] private Color zoneColor = new Color(0.4f, 0.8f, 1f, 0.15f);
-
-    private InputAction buildAction;
     private Camera cam;
     private SpriteRenderer ghost;
     private Vector3Int hoveredCell;
@@ -30,7 +28,6 @@ public class BuildMode : MonoBehaviour
 
     void Start()
     {
-        buildAction = InputSystem.actions.FindAction("Build");
         cam = Camera.main;
         CreateGhost();
         CreateZoneOverlay();
@@ -47,18 +44,20 @@ public class BuildMode : MonoBehaviour
     {
         if (Time.timeScale == 0f || LocationExit.Traveling) return;
 
-        bool canBuild = IsInBuildLocation() && !InventoryUI.IsOpen;
-        if (IsActive && !canBuild)
+        if (IsActive && !CanBuildHere())
         {
             SetActive(false);
         }
 
-        if (canBuild && buildAction.WasPressedThisFrame())
-        {
-            SetActive(!IsActive);
-        }
-
         if (!IsActive) return;
+        if (BuildWheel.WasOpenThisFrame) return;
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+        {
+            SetActive(false);
+            return;
+        }
 
         hoveredCell = GetMouseCell();
         ghost.transform.position = GetPlacePosition(hoveredCell, selectedDefense.Size);
@@ -88,6 +87,17 @@ public class BuildMode : MonoBehaviour
         ghost.sprite = prefabRenderer.sprite;
         ghost.sortingLayerID = prefabRenderer.sortingLayerID;
         ghost.transform.localScale = prefab.transform.localScale;
+    }
+
+    public bool CanBuildHere()
+    {
+        return IsInBuildLocation() && !InventoryUI.IsOpen;
+    }
+
+    public void StartBuilding(DefenseData defense)
+    {
+        SelectDefense(defense);
+        SetActive(true);
     }
 
     private bool IsInBuildLocation()

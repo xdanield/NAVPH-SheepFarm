@@ -675,6 +675,7 @@ GameObject:
   - component: {fileID: 1479441209}
   - component: {fileID: 1479441208}
   - component: {fileID: 1479441210}
+  - component: {fileID: 1479441211}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: GameController
@@ -733,6 +734,29 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 832
   zoneColor: {r: 0.4, g: 0.8, b: 1, a: 0.15}
+--- !u!114 &1479441211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1479441207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b140cc531df32b43a137e972ed3d12c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildWheel
+  buildMode: {fileID: 1479441210}
+  options:
+  - {fileID: 11400000, guid: 9c5bac0a8f12e9542bde5210a7e7ce13, type: 2}
+  - {fileID: 11400000, guid: b7c3227d7ec52034baefba9a6ed4c104, type: 2}
+  - {fileID: 11400000, guid: e529a020065f2cc45af2885e70ff2216, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  radius: 55
+  slotSize: {x: 58, y: 18}
+  deadZone: 15
 --- !u!1001 &1480037131
 PrefabInstance:
   m_ObjectHideFlags: 0
