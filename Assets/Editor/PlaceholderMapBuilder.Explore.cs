@@ -9,8 +9,9 @@ using UnityEngine;
 ///
 /// Baa-ricade > Vygenerovat Explore lokaciu
 ///     Spusti Tools/mapgen/explore_map.py (teren, les, jazero, lom, ruiny -> Assets/Art/Map/explore_map.json
-///     a explore_ground.png), zmaze objekt "Explore" v scene a postavi ho nanovo. Farmu nemeni, len prepoji
-///     vychod hore na ceste (ExploreExit) s prichodom do Explore a naspat.
+///     a explore_ground.png), postavi lokaciu nanovo a ulozi ju ako prefab Assets/Prefabs/Map/Explore.prefab
+///     (v scene je len instancia). Farmu nemeni. Vychody hladaju ciel podla mena lokacie (LocationExit),
+///     takze farma a Explore na seba nepotrebuju priame odkazy.
 ///
 /// Explore je v tej istej scene ako farma, len posunute (ExploreOrigin), takze inventar, cas dna,
 /// dorastanie surovin aj zombie bezia dalej. Hrac sa presuva cez LocationExit (stmavnutie obrazovky)
@@ -51,7 +52,7 @@ public static partial class PlaceholderMapBuilder
 
         var old = scene.GetRootGameObjects().Where(g => g.name == "Explore").ToArray();
         if (old.Length > 0 &&
-            !EditorUtility.DisplayDialog("Explore", "Objekt 'Explore' sa zmaze a lokacia sa vygeneruje nanovo. Rucne upravy v nom sa stratia (Ctrl+Z to vrati).", "Prestavat", "Zrusit"))
+            !EditorUtility.DisplayDialog("Explore", "Lokacia sa vygeneruje nanovo a prepise prefab Explore. Rucne upravy v nom sa stratia (vratit sa daju cez git).", "Prestavat", "Zrusit"))
             return;
 
         if (!RunGenerator(ExploreGeneratorScript))
@@ -85,47 +86,33 @@ public static partial class PlaceholderMapBuilder
         trigger.size = new Vector2(3, 1.5f);
 
         root.transform.position = ExploreOrigin;
+        SetupExploreLocation(root);
+        SaveAsMapPrefab(root, ExplorePrefab);
 
-        LinkLocations();
         EditorSceneManager.MarkSceneDirty(scene);
         Debug.Log($"Explore {map.width}x{map.height} (seed {map.seed}) hotove na {ExploreOrigin}. Nezabudni ulozit scenu (Ctrl+S).");
     }
 
-    /// Farma a Explore dostanu Location (hranice kamery) a vychody sa prepoja navzajom.
-    /// Vola sa po stavbe farmy aj Explore, takze prestavanie jednej lokacie spojenie neporusi.
-    static void LinkLocations()
+    /// Farma: Location (hranice kamery, hore aj vyhlad z kopca ako v SetupCamera) a vychod hore na ceste do Explore.
+    static void SetupFarmLocation(GameObject farm)
     {
-        var roots = EditorSceneManager.GetActiveScene().GetRootGameObjects();
-        var farm = roots.FirstOrDefault(g => g.name == "Environment");
-        var explore = roots.FirstOrDefault(g => g.name == "Explore");
-
-        // Farma: kamera ukaze hore aj vyhlad z kopca (pozadie), rovnako ako v SetupCamera.
-        var farmLocation = farm != null ? SetupLocation(farm, FarmName, new Rect(0, 0, Width, Height - CliffRows + BackdropHeight)) : null;
-        var exploreLocation = explore != null ? SetupLocation(explore, ExploreName, new Rect(0, 0, ExploreWidth, ExploreHeight)) : null;
-        if (farmLocation == null || exploreLocation == null) return;
-
-        var farmPoints = farm.transform.Find("Points");
-        var farmExit = farmPoints != null ? farmPoints.Find("ExploreExit") : null;
-        var exploreExit = explore.transform.Find("Points/FarmExit");
-        var exploreArrival = explore.transform.Find("Points/ArrivalFromFarm");
-        if (farmExit == null || exploreExit == null || exploreArrival == null)
-        {
-            Debug.LogWarning("Lokacie sa nepodarilo prepojit: chyba Environment/Points/ExploreExit alebo Explore/Points/FarmExit. Prestavaj mapu.");
-            return;
-        }
+        SetupLocation(farm, FarmName, new Rect(0, 0, Width, Height - CliffRows + BackdropHeight));
+        var points = farm.transform.Find("Points");
+        if (points == null) { Debug.LogWarning("Environment/Points chyba, vychod na Explore nenastaveny. Prestavaj mapu."); return; }
 
         // Prichod na farmu: na ceste kusok pod vychodom (mimo jeho triggra, inak by hraca hned poslalo spat).
-        var farmArrival = farmPoints.Find("ArrivalFromExplore");
-        if (farmArrival == null)
-        {
-            var go = Marker(farmPoints, "ArrivalFromExplore", new Vector3(ExitX + 0.5f, Height - CliffRows - 2f), 3);
-            Undo.RegisterCreatedObjectUndo(go, "Arrival");
-            farmArrival = go.transform;
-        }
+        if (points.Find("ArrivalFromExplore") == null)
+            Marker(points, "ArrivalFromExplore", new Vector3(ExitX + 0.5f, Height - CliffRows - 2f), 3);
+        var exit = points.Find("ExploreExit");
+        if (exit != null) SetupExit(exit.gameObject, ExploreName, "Points/ArrivalFromFarm");
+    }
 
-        WireExit(farmExit.gameObject, exploreLocation, exploreArrival);
-        WireExit(exploreExit.gameObject, farmLocation, farmArrival);
-        EditorSceneManager.MarkSceneDirty(farm.scene);
+    /// Explore: Location a vychod dole na farmu.
+    static void SetupExploreLocation(GameObject explore)
+    {
+        SetupLocation(explore, ExploreName, new Rect(0, 0, ExploreWidth, ExploreHeight));
+        var exit = explore.transform.Find("Points/FarmExit");
+        if (exit != null) SetupExit(exit.gameObject, FarmName, "Points/ArrivalFromExplore");
     }
 
     static Location SetupLocation(GameObject root, string displayName, Rect area)
@@ -139,17 +126,20 @@ public static partial class PlaceholderMapBuilder
         return location;
     }
 
-    static void WireExit(GameObject exit, Location target, Transform arrival)
+    /// Vychod hlada ciel podla mena (farma a Explore su samostatne prefaby, priamy odkaz medzi nimi sa neda ulozit).
+    static void SetupExit(GameObject exit, string targetName, string arrivalPath)
     {
         var col = exit.GetComponent<BoxCollider2D>();
-        if (col == null) { col = Undo.AddComponent<BoxCollider2D>(exit); col.size = new Vector2(3, 2); }
+        if (col == null) { col = exit.AddComponent<BoxCollider2D>(); col.size = new Vector2(3, 2); }
         col.isTrigger = true;
 
         var link = exit.GetComponent<LocationExit>();
-        if (link == null) link = Undo.AddComponent<LocationExit>(exit);
+        if (link == null) link = exit.AddComponent<LocationExit>();
         var so = new SerializedObject(link);
-        so.FindProperty("target").objectReferenceValue = target;
-        so.FindProperty("arrival").objectReferenceValue = arrival;
-        so.ApplyModifiedProperties();
+        so.FindProperty("targetName").stringValue = targetName;
+        so.FindProperty("arrivalPath").stringValue = arrivalPath;
+        so.FindProperty("target").objectReferenceValue = null;
+        so.FindProperty("arrival").objectReferenceValue = null;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 }

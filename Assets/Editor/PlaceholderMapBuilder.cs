@@ -14,8 +14,13 @@ using UnityEngine.Tilemaps;
 /// Baa-ricade > Vygenerovat mapu
 ///     Spusti Python generator (Tools/mapgen/farm_map.py), ktory vymysli teren a rozmiestni stromy, kriky,
 ///     kvety... do Assets/Art/Map/farm_map.json a namaluje zem do Assets/Art/Map/farm_ground.png.
-///     Potom zmaze objekty "Environment" a "Backdrop" v scene a postavi mapu podla toho suboru.
+///     Potom postavi mapu podla toho suboru a ulozi ju ako prefaby Assets/Prefabs/Map/FarmMap.prefab
+///     (objekt "Environment") a Backdrop.prefab. V scene su len ich instancie, takze pregenerovanie mapy
+///     meni prefaby, nie scenu (menej konfliktov v gite, ked v scene robi aj niekto iny).
 ///     Ak Python nie je nainstalovany, postavi poslednu ulozenu mapu (subor je v gite).
+/// Baa-ricade > Previest mapu na prefaby
+///     Jednorazovo: Environment, Backdrop, Explore a Lighting, ktore su v scene ako obycajne objekty,
+///     ulozi ako prefaby (nic negeneruje nanovo).
 /// Baa-ricade > Aktualizovat sprity z Aseprite
 ///     Nic neprestavuje, len do Tile assetov, prefabov a pozadia da nakreslene sprity z Assets/Art.
 ///     Kym frame v .aseprite nie je nakresleny, pouzije sa placeholder.
@@ -52,6 +57,11 @@ public static partial class PlaceholderMapBuilder
     const string PlaceholderDir = "Assets/Art/Placeholder";
     const string TileAssetDir = "Assets/Art/TileAssets";
     const string PrefabDir = "Assets/Prefabs/Environment";
+    const string MapPrefabDir = "Assets/Prefabs/Map";
+    public const string FarmMapPrefab = MapPrefabDir + "/FarmMap.prefab";
+    public const string BackdropPrefab = MapPrefabDir + "/Backdrop.prefab";
+    public const string ExplorePrefab = MapPrefabDir + "/Explore.prefab";
+    public const string LightingPrefab = MapPrefabDir + "/Lighting.prefab";
     const string Renderer2DPath = "Assets/Settings/Renderer2D.asset";
     const int PlaceholderScale = 1; // placeholdery su kreslene po 16 px na tile
 
@@ -127,7 +137,7 @@ public static partial class PlaceholderMapBuilder
 
         var old = scene.GetRootGameObjects().Where(g => g.name == "Environment" || g.name == "Backdrop").ToArray();
         if (old.Length > 0 &&
-            !EditorUtility.DisplayDialog("Mapa", "Objekty 'Environment' a 'Backdrop' sa zmazu a mapa sa vygeneruje nanovo. Rucne upravy v nich sa stratia (Ctrl+Z to vrati).", "Prestavat", "Zrusit"))
+            !EditorUtility.DisplayDialog("Mapa", "Mapa sa vygeneruje nanovo a prepise prefaby FarmMap a Backdrop. Rucne upravy v nich sa stratia (vratit sa daju cez git).", "Prestavat", "Zrusit"))
             return;
 
         if (!RunGenerator())
@@ -153,16 +163,18 @@ public static partial class PlaceholderMapBuilder
         BuildEdges(root.transform);
         PlaceNature(root.transform, map, prefabs);
         PlaceFarm(root.transform, prefabs);
+        SetupFarmLocation(root);  // hranice kamery a vychod na Explore (PlaceholderMapBuilder.Explore.cs)
+        SaveAsMapPrefab(root, FarmMapPrefab);
 
         var back = new GameObject("Backdrop");
         Undo.RegisterCreatedObjectUndo(back, "Backdrop");
         BuildBackdrop(back.transform, backdrop);
+        SaveAsMapPrefab(back, BackdropPrefab);
 
         SetupCharacters();
         PlaceActors();
         SetupCamera();
         SetupSorting();
-        LinkLocations(); // vychod hore na ceste -> Explore (ak uz je postavene), PlaceholderMapBuilder.Explore.cs
 
         EditorSceneManager.MarkSceneDirty(scene);
         Debug.Log($"Mapa {map.width}x{map.height} (seed {map.seed}) hotova. Nezabudni ulozit scenu (Ctrl+S).");
@@ -176,9 +188,19 @@ public static partial class PlaceholderMapBuilder
         UpdatePrefabs();
         SetupCharacters();
 
-        // Pozadie nie je prefab, sprity menime priamo v scene.
+        // Pozadie: v prefabe Backdrop (alebo v scene, ak este nie je prevedene na prefab).
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(BackdropPrefab) != null)
+        {
+            using (var scope = new PrefabUtility.EditPrefabContentsScope(BackdropPrefab))
+                foreach (var def in Backdrop)
+                {
+                    var child = scope.prefabContentsRoot.transform.Find(def.Name);
+                    var sr = child != null ? child.GetComponent<SpriteRenderer>() : null;
+                    if (sr != null) sr.sprite = ResolveSprite(def.Aseprite, 0, $"Background/{def.Name}", def.Paint);
+                }
+        }
         var back = EditorSceneManager.GetActiveScene().GetRootGameObjects().FirstOrDefault(g => g.name == "Backdrop");
-        if (back != null)
+        if (back != null && !PrefabUtility.IsPartOfPrefabInstance(back))
         {
             foreach (var def in Backdrop)
             {
@@ -190,6 +212,54 @@ public static partial class PlaceholderMapBuilder
             EditorSceneManager.MarkSceneDirty(back.scene);
         }
         Debug.Log("Sprity v tiles, prefaboch a pozadi aktualizovane.");
+    }
+
+    /// Jednorazovy prevod: obycajne objekty mapy v scene -> prefaby v Assets/Prefabs/Map (bez generovania nanovo).
+    [MenuItem("Baa-ricade/Previest mapu na prefaby")]
+    public static void ConvertSceneToPrefabs()
+    {
+        var scene = EditorSceneManager.GetActiveScene();
+        var roots = scene.GetRootGameObjects();
+        Undo.SetCurrentGroupName("Previest mapu na prefaby");
+        int converted = 0;
+        var targets = new[] { ("Environment", FarmMapPrefab), ("Backdrop", BackdropPrefab), ("Explore", ExplorePrefab), ("Lighting", LightingPrefab) };
+        foreach (var (name, path) in targets)
+        {
+            var go = roots.FirstOrDefault(g => g.name == name);
+            if (go == null) continue;
+            if (PrefabUtility.IsPartOfPrefabInstance(go))
+            {
+                Debug.Log($"{name} uz je prefab ({PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go)}).");
+                continue;
+            }
+
+            // Prefab nemoze odkazovat na objekty mimo seba: vychody sa prepoja podla mena, Lighting si cyklus najde sam.
+            if (name == "Environment") SetupFarmLocation(go);
+            if (name == "Explore") SetupExploreLocation(go);
+            if (name == "Lighting")
+                foreach (var dn in go.GetComponents<DayNightLighting>())
+                {
+                    var so = new SerializedObject(dn);
+                    so.FindProperty("cycle").objectReferenceValue = null;
+                    so.FindProperty("preview").floatValue = 0f;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    dn.SetNight(0f); // prefab ulozi denne farby svetiel, v scene potom nevzniknu overrides
+                }
+
+            SaveAsMapPrefab(go, path);
+            converted++;
+        }
+        EditorSceneManager.MarkSceneDirty(scene);
+        Debug.Log(converted > 0
+            ? $"Prevedene na prefaby: {converted} (v {MapPrefabDir}). Uloz scenu (Ctrl+S)."
+            : "Nic na prevod - mapa uz je v prefaboch.");
+    }
+
+    /// Ulozi objekt zo sceny ako prefab (existujuci prepise) a v scene z neho spravi instanciu.
+    public static void SaveAsMapPrefab(GameObject root, string path)
+    {
+        EnsureFolder(MapPrefabDir);
+        PrefabUtility.SaveAsPrefabAssetAndConnect(root, path, InteractionMode.UserAction);
     }
 
     // ---------------------------------------------------------------- assety

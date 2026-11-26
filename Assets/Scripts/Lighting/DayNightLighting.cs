@@ -71,6 +71,12 @@ public class DayNightLighting : MonoBehaviour
     [Header("Nahlad v editore (mimo Play)")]
     [Range(0f, 1f)] [SerializeField] private float preview = 0f;
 
+    void Awake()
+    {
+        // Lighting je prefab a prefab nemoze odkazovat na objekt v scene, preto si cyklus najde sam.
+        if (cycle == null && Application.isPlaying) cycle = FindFirstObjectByType<DayNightCycle>(); // v editore nie, aby v scene nevznikol override
+    }
+
     void Update()
     {
         bool live = Application.isPlaying && cycle != null;

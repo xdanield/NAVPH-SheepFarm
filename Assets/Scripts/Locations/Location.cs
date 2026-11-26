@@ -32,6 +32,14 @@ public class Location : MonoBehaviour
     public bool Contains(Vector2 point) =>
         point.x >= Min.x && point.x <= Max.x && point.y >= Min.y && point.y <= Max.y;
 
+    /// <summary>Lokacia podla mena (displayName), null ak nie je v scene.</summary>
+    public static Location Find(string name)
+    {
+        foreach (var location in all)
+            if (location.displayName == name) return location;
+        return null;
+    }
+
     /// <summary>Lokacia, v ktorej je bod (null, ak v ziadnej).</summary>
     public static Location At(Vector2 point)
     {

@@ -15,7 +15,8 @@ using UnityEngine.Rendering.Universal;
 ///     - SpriteShadow (tien v tvare spritu od slnka aj lamp) na prefaby domu, plotov, stola, truhlice...
 ///       aj na stromy/kriky/kamene z generatora mapy (namalovane tiene Props/shadows zmaze).
 ///       Unity Shadow Caster 2D sa nepouziva, stare zo sceny zmaze.
-///     Da sa spustit znova, stare svetla zmaze a postavi nanovo.
+///     Da sa spustit znova, stare svetla zmaze a postavi nanovo. Vysledok ulozi ako prefab
+///     Assets/Prefabs/Map/Lighting.prefab (v scene je len instancia).
 ///
 /// LightingSetup.CapturePreview (len z prikazoveho riadku, batchmode)
 ///     Nastavi osvetlenie v pamati (scenu neulozi) a ulozi screenshoty pre rozne casy dna do -outDir.
@@ -37,7 +38,8 @@ public static class LightingSetup
         Debug.Log("Osvetlenie hotove. Cas posuvas na objekte Lighting (Nahlad), v hre drz T na zrychlenie casu. Nezabudni ulozit scenu (Ctrl+S).");
     }
 
-    public static DayNightLighting Setup()
+    /// <param name="savePrefab">false = len v pamati (screenshoty v batchmode), Lighting.prefab sa neprepise.</param>
+    public static DayNightLighting Setup(bool savePrefab = true)
     {
         var scene = EditorSceneManager.GetActiveScene();
         foreach (var go in scene.GetRootGameObjects().Where(g => g.name == "Lighting")) Undo.DestroyObjectImmediate(go);
@@ -52,7 +54,7 @@ public static class LightingSetup
 
         var dn = root.AddComponent<DayNightLighting>();
         var so = new SerializedObject(dn);
-        so.FindProperty("cycle").objectReferenceValue = Object.FindAnyObjectByType<DayNightCycle>();
+        // cycle nenastavujeme: Lighting je prefab (nemoze odkazovat na scenu), DayNightLighting si ho najde v Awake.
         so.FindProperty("globalLight").objectReferenceValue = global;
         so.ApplyModifiedPropertiesWithoutUndo();
 
@@ -81,6 +83,7 @@ public static class LightingSetup
         int removed = 0;
         foreach (var sc in Object.FindObjectsByType<ShadowCaster2D>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
+            if (PrefabUtility.IsPartOfPrefabInstance(sc)) continue; // v prefabe mapy uz nie su (stara scena)
             Undo.DestroyObjectImmediate(sc);
             removed++;
         }
@@ -88,6 +91,8 @@ public static class LightingSetup
         FixSceneProps(scene);
 
         dn.SetNight(0f);
+        // Az po SetNight: prefab ma farby svetiel ako cez den (preview = 0), takze v scene nevzniknu overrides.
+        if (savePrefab) PlaceholderMapBuilder.SaveAsMapPrefab(root, PlaceholderMapBuilder.LightingPrefab);
         return dn;
     }
 
@@ -174,12 +179,14 @@ public static class LightingSetup
         return true;
     }
 
-    /// Dekoracie v uz postavenej scene: zmaze namalovane tiene, ostatnym prida SpriteShadow.
+    /// Dekoracie v starej scene (mapa este nie je prefab): zmaze namalovane tiene, ostatnym prida SpriteShadow.
+    /// Mapa v prefabe ich uz ma z generatora, tam sa nic nemeni.
     static void FixSceneProps(UnityEngine.SceneManagement.Scene scene)
     {
         int removed = 0, added = 0;
         foreach (var root in scene.GetRootGameObjects())
-        foreach (var props in root.GetComponentsInChildren<Transform>(true).Where(t => t.name == "Props").ToArray())
+        foreach (var props in root.GetComponentsInChildren<Transform>(true)
+                     .Where(t => t.name == "Props" && !PrefabUtility.IsPartOfPrefabInstance(t)).ToArray())
         foreach (Transform t in props.Cast<Transform>().ToArray())
         {
             if (t.name == Path.GetFileName(BakedShadowSprite)) { Undo.DestroyObjectImmediate(t.gameObject); removed++; }
@@ -210,7 +217,7 @@ public static class LightingSetup
         try
         {
             EditorSceneManager.OpenScene("Assets/Scenes/Farm.unity", OpenSceneMode.Single);
-            var dn = Setup();
+            var dn = Setup(savePrefab: false);
 
             var cam = Camera.main;
             var ppc = cam.GetComponent<PixelPerfectCamera>();
