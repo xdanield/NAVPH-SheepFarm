@@ -32,6 +32,8 @@ public class PlayerAttack : MonoBehaviour
         }
 
         if (Time.timeScale == 0f) return;
+        
+        if (BuildMode.IsActive) return;
 
         if (attackAction.WasPressedThisFrame())
         {
