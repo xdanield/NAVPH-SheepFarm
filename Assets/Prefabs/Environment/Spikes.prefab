@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7024941694060562567}
   - component: {fileID: 1543171455115946455}
   - component: {fileID: 2602887320120782734}
+  - component: {fileID: 6778595153250268114}
   m_Layer: 0
   m_Name: Spikes
   m_TagString: Untagged
@@ -138,3 +139,25 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.9, y: 0.9}
   m_EdgeRadius: 0
+--- !u!114 &6778595153250268114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4626014912277504707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 1
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  ignoreLightsOnSelf: 1
+  contactShadow: 0
+  contactAlpha: 0
+  contactWidth: 0.6
+  noonContactAlpha: 0.5
+  noonContactWidth: 0.8

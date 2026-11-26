@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4354897629088914515}
   - component: {fileID: 8829399179002407189}
   - component: {fileID: 3286675488134199189}
+  - component: {fileID: 1082355235255090840}
   m_Layer: 0
   m_Name: ScrapPile
   m_TagString: Untagged
@@ -164,3 +165,25 @@ MonoBehaviour:
   gatherSound: {fileID: 0}
   gatherSoundInterval: 0.45
   completeSound: {fileID: 0}
+--- !u!114 &1082355235255090840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2257951658204599022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 2
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  ignoreLightsOnSelf: 1
+  contactShadow: 1
+  contactAlpha: 0
+  contactWidth: 0.6
+  noonContactAlpha: 0.5
+  noonContactWidth: 0.8
