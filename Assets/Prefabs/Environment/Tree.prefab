@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8526357243846993202}
   - component: {fileID: 4579754324880604741}
   - component: {fileID: 661368634129519011}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Tree
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -181,6 +181,9 @@ MonoBehaviour:
   maxAlpha: 0.45
   footOffset: 0.05
   sortingOrder: -50
+  ignoreLightsOnSelf: 1
   contactShadow: 1
   contactAlpha: 0
   contactWidth: 0.7
+  noonContactAlpha: 0.5
+  noonContactWidth: 0.8

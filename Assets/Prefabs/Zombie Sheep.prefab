@@ -242,6 +242,35 @@ MonoBehaviour:
   obstacleLayers:
     serializedVersion: 2
     m_Bits: 512
+  separationRadius: 0.8
+  separationStrength: 1
+  zombieLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  speedVariation: 0.1
+  laneOffsetRange: 0
+--- !u!114 &5100990259786174761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6431272298626610446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
+  maxShadows: 3
+  maxAlpha: 0.5
+  footOffset: 0.05
+  sortingOrder: -50
+  ignoreLightsOnSelf: 1
+  contactShadow: 1
+  contactAlpha: 0.3
+  contactWidth: 0.6
+  noonContactAlpha: 0.5
+  noonContactWidth: 0.8
 --- !u!1 &8457880020757495723
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,22 +411,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2075291507702966150, guid: 972368b86eb82504abe5ed8fe94d3956, type: 3}
   m_PrefabInstance: {fileID: 6244101474365361769}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5100990259786174761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6431272298626610446}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5a68419f2954f049c352e0da2b9da41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpriteShadow
-  maxShadows: 3
-  maxAlpha: 0.5
-  footOffset: 0.05
-  sortingOrder: -50
-  contactShadow: 1
-  contactAlpha: 0.3
-  contactWidth: 0.6
