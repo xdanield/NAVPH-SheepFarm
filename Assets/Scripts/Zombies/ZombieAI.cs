@@ -36,7 +36,7 @@ public class ZombieAI : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private ZombieAttack attack;
     private Transform player;
-    private float[] laneYs;
+    private LaneLayout laneLayout;
     private Vector2 moveDirection;
     private Health currentObstacle;
     private GrabbableSheep heldSheep;
@@ -52,12 +52,7 @@ public class ZombieAI : MonoBehaviour
         GameObject playerObject = GameObject.FindWithTag("Player");
         if (playerObject != null) player = playerObject.transform;
 
-        GameObject[] lanes = GameObject.FindGameObjectsWithTag("ZombieLane");
-        laneYs = new float[lanes.Length];
-        for (int i = 0; i < lanes.Length; i++)
-        {
-            laneYs[i] = lanes[i].transform.position.y;
-        }
+        laneLayout = FindFirstObjectByType<LaneLayout>();
 
         moveSpeed *= Random.Range(1f - speedVariation, 1f + speedVariation);
         laneOffset = Random.Range(-laneOffsetRange, laneOffsetRange);
@@ -196,19 +191,10 @@ public class ZombieAI : MonoBehaviour
 
     private Vector2 GetWalkRightDirection()
     {
-        if (laneYs.Length == 0) return Vector2.right;
+        if (laneLayout == null) return Vector2.right;
 
         float y = transform.position.y;
-        float nearestLane = laneYs[0];
-        foreach (float laneY in laneYs)
-        {
-            if (Mathf.Abs(laneY - y) < Mathf.Abs(nearestLane - y))
-            {
-                nearestLane = laneY;
-            }
-        }
-
-        float targetY = nearestLane + laneOffset;
+        float targetY = laneLayout.NearestLaneY(y) + laneOffset;
         float vertical = Mathf.Clamp(targetY - y, -1f, 1f) * laneSteering;
         return new Vector2(1f, vertical).normalized;
     }
