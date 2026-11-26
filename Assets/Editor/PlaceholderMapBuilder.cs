@@ -14,8 +14,13 @@ using UnityEngine.Tilemaps;
 /// Baa-ricade > Vygenerovat mapu
 ///     Spusti Python generator (Tools/mapgen/farm_map.py), ktory vymysli teren a rozmiestni stromy, kriky,
 ///     kvety... do Assets/Art/Map/farm_map.json a namaluje zem do Assets/Art/Map/farm_ground.png.
-///     Potom zmaze objekty "Environment" a "Backdrop" v scene a postavi mapu podla toho suboru.
+///     Potom postavi mapu podla toho suboru a ulozi ju ako prefaby Assets/Prefabs/Map/FarmMap.prefab
+///     (objekt "Environment") a Backdrop.prefab. V scene su len ich instancie, takze pregenerovanie mapy
+///     meni prefaby, nie scenu (menej konfliktov v gite, ked v scene robi aj niekto iny).
 ///     Ak Python nie je nainstalovany, postavi poslednu ulozenu mapu (subor je v gite).
+/// Baa-ricade > Previest mapu na prefaby
+///     Jednorazovo: Environment, Backdrop, Explore a Lighting, ktore su v scene ako obycajne objekty,
+///     ulozi ako prefaby (nic negeneruje nanovo).
 /// Baa-ricade > Aktualizovat sprity z Aseprite
 ///     Nic neprestavuje, len do Tile assetov, prefabov a pozadia da nakreslene sprity z Assets/Art.
 ///     Kym frame v .aseprite nie je nakresleny, pouzije sa placeholder.
@@ -52,6 +57,11 @@ public static partial class PlaceholderMapBuilder
     const string PlaceholderDir = "Assets/Art/Placeholder";
     const string TileAssetDir = "Assets/Art/TileAssets";
     const string PrefabDir = "Assets/Prefabs/Environment";
+    const string MapPrefabDir = "Assets/Prefabs/Map";
+    public const string FarmMapPrefab = MapPrefabDir + "/FarmMap.prefab";
+    public const string BackdropPrefab = MapPrefabDir + "/Backdrop.prefab";
+    public const string ExplorePrefab = MapPrefabDir + "/Explore.prefab";
+    public const string LightingPrefab = MapPrefabDir + "/Lighting.prefab";
     const string Renderer2DPath = "Assets/Settings/Renderer2D.asset";
     const int PlaceholderScale = 1; // placeholdery su kreslene po 16 px na tile
 
@@ -102,6 +112,9 @@ public static partial class PlaceholderMapBuilder
         new PrefabDef { Name = "House", Aseprite = "Objects/house", Paint = Px.House, ColliderSize = new Vector2(7f, 3.5f), ColliderOffset = new Vector2(0, 1.75f) },
         new PrefabDef { Name = "CraftingTable", Aseprite = "Objects/crafting_table", Paint = Px.CraftingTable, ColliderSize = new Vector2(1.8f, 0.6f), ColliderOffset = new Vector2(0, 0.3f) },
         new PrefabDef { Name = "CookingPot", Aseprite = "Objects/cooking_pot", Paint = Px.CookingPot, ColliderSize = new Vector2(0.8f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
+        // Zbieratelne veci z Explore (les: huby, ruiny: srot). Kym nie je .aseprite, maju placeholder.
+        new PrefabDef { Name = "Mushroom", Aseprite = "Objects/mushroom", Paint = Px.Mushroom, ColliderSize = new Vector2(0.6f, 0.4f), ColliderOffset = new Vector2(0, 0.2f), Trigger = true },
+        new PrefabDef { Name = "ScrapPile", Aseprite = "Objects/scrap_pile", Paint = Px.ScrapPile, ColliderSize = new Vector2(0.9f, 0.5f), ColliderOffset = new Vector2(0, 0.25f) },
     };
 
     // Follow: ako velmi sa vrstva hybe s kamerou (1 = nekonecne daleko). Order: co je vpredu.
@@ -124,7 +137,7 @@ public static partial class PlaceholderMapBuilder
 
         var old = scene.GetRootGameObjects().Where(g => g.name == "Environment" || g.name == "Backdrop").ToArray();
         if (old.Length > 0 &&
-            !EditorUtility.DisplayDialog("Mapa", "Objekty 'Environment' a 'Backdrop' sa zmazu a mapa sa vygeneruje nanovo. Rucne upravy v nich sa stratia (Ctrl+Z to vrati).", "Prestavat", "Zrusit"))
+            !EditorUtility.DisplayDialog("Mapa", "Mapa sa vygeneruje nanovo a prepise prefaby FarmMap a Backdrop. Rucne upravy v nich sa stratia (vratit sa daju cez git).", "Prestavat", "Zrusit"))
             return;
 
         if (!RunGenerator())
@@ -150,10 +163,13 @@ public static partial class PlaceholderMapBuilder
         BuildEdges(root.transform);
         PlaceNature(root.transform, map, prefabs);
         PlaceFarm(root.transform, prefabs);
+        SetupFarmLocation(root);  // hranice kamery a vychod na Explore (PlaceholderMapBuilder.Explore.cs)
+        SaveAsMapPrefab(root, FarmMapPrefab);
 
         var back = new GameObject("Backdrop");
         Undo.RegisterCreatedObjectUndo(back, "Backdrop");
         BuildBackdrop(back.transform, backdrop);
+        SaveAsMapPrefab(back, BackdropPrefab);
 
         SetupCharacters();
         PlaceActors();
@@ -172,9 +188,19 @@ public static partial class PlaceholderMapBuilder
         UpdatePrefabs();
         SetupCharacters();
 
-        // Pozadie nie je prefab, sprity menime priamo v scene.
+        // Pozadie: v prefabe Backdrop (alebo v scene, ak este nie je prevedene na prefab).
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(BackdropPrefab) != null)
+        {
+            using (var scope = new PrefabUtility.EditPrefabContentsScope(BackdropPrefab))
+                foreach (var def in Backdrop)
+                {
+                    var child = scope.prefabContentsRoot.transform.Find(def.Name);
+                    var sr = child != null ? child.GetComponent<SpriteRenderer>() : null;
+                    if (sr != null) sr.sprite = ResolveSprite(def.Aseprite, 0, $"Background/{def.Name}", def.Paint);
+                }
+        }
         var back = EditorSceneManager.GetActiveScene().GetRootGameObjects().FirstOrDefault(g => g.name == "Backdrop");
-        if (back != null)
+        if (back != null && !PrefabUtility.IsPartOfPrefabInstance(back))
         {
             foreach (var def in Backdrop)
             {
@@ -186,6 +212,54 @@ public static partial class PlaceholderMapBuilder
             EditorSceneManager.MarkSceneDirty(back.scene);
         }
         Debug.Log("Sprity v tiles, prefaboch a pozadi aktualizovane.");
+    }
+
+    /// Jednorazovy prevod: obycajne objekty mapy v scene -> prefaby v Assets/Prefabs/Map (bez generovania nanovo).
+    [MenuItem("Baa-ricade/Previest mapu na prefaby")]
+    public static void ConvertSceneToPrefabs()
+    {
+        var scene = EditorSceneManager.GetActiveScene();
+        var roots = scene.GetRootGameObjects();
+        Undo.SetCurrentGroupName("Previest mapu na prefaby");
+        int converted = 0;
+        var targets = new[] { ("Environment", FarmMapPrefab), ("Backdrop", BackdropPrefab), ("Explore", ExplorePrefab), ("Lighting", LightingPrefab) };
+        foreach (var (name, path) in targets)
+        {
+            var go = roots.FirstOrDefault(g => g.name == name);
+            if (go == null) continue;
+            if (PrefabUtility.IsPartOfPrefabInstance(go))
+            {
+                Debug.Log($"{name} uz je prefab ({PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go)}).");
+                continue;
+            }
+
+            // Prefab nemoze odkazovat na objekty mimo seba: vychody sa prepoja podla mena, Lighting si cyklus najde sam.
+            if (name == "Environment") SetupFarmLocation(go);
+            if (name == "Explore") SetupExploreLocation(go);
+            if (name == "Lighting")
+                foreach (var dn in go.GetComponents<DayNightLighting>())
+                {
+                    var so = new SerializedObject(dn);
+                    so.FindProperty("cycle").objectReferenceValue = null;
+                    so.FindProperty("preview").floatValue = 0f;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    dn.SetNight(0f); // prefab ulozi denne farby svetiel, v scene potom nevzniknu overrides
+                }
+
+            SaveAsMapPrefab(go, path);
+            converted++;
+        }
+        EditorSceneManager.MarkSceneDirty(scene);
+        Debug.Log(converted > 0
+            ? $"Prevedene na prefaby: {converted} (v {MapPrefabDir}). Uloz scenu (Ctrl+S)."
+            : "Nic na prevod - mapa uz je v prefaboch.");
+    }
+
+    /// Ulozi objekt zo sceny ako prefab (existujuci prepise) a v scene z neho spravi instanciu.
+    public static void SaveAsMapPrefab(GameObject root, string path)
+    {
+        EnsureFolder(MapPrefabDir);
+        PrefabUtility.SaveAsPrefabAssetAndConnect(root, path, InteractionMode.UserAction);
     }
 
     // ---------------------------------------------------------------- assety
@@ -319,10 +393,10 @@ public static partial class PlaceholderMapBuilder
     [Serializable] class MapProp { public string sprite; public int frame, order; public float x, y, cw, ch; public bool collider, flip; }
 
     /// Spusti Python generator mapy. Vrati false, ak sa nepodarilo (detaily v Console).
-    static bool RunGenerator()
+    static bool RunGenerator(string generator = GeneratorScript)
     {
         string root = Path.GetDirectoryName(Application.dataPath);
-        string script = Path.Combine(root, GeneratorScript);
+        string script = Path.Combine(root, generator);
         foreach (string exe in new[] { "python", "py", "python3" })
         {
             try
@@ -412,6 +486,7 @@ public static partial class PlaceholderMapBuilder
         var cache = new Dictionary<string, Sprite[]>();
         foreach (var p in map.props)
         {
+            if (p.sprite == LightingSetup.BakedShadowSprite) continue; // tiene robi SpriteShadow
             if (!cache.TryGetValue(p.sprite, out var sprites))
             {
                 var all = AssetDatabase.LoadAllAssetsAtPath($"Assets/Art/{p.sprite}.aseprite").OfType<Sprite>().ToArray();
@@ -429,6 +504,7 @@ public static partial class PlaceholderMapBuilder
             sr.sortingOrder = p.order;
             sr.spriteSortPoint = SpriteSortPoint.Pivot;
             sr.flipX = p.flip;
+            LightingSetup.AddPropShadow(go, go.name);
             if (p.collider)
             {
                 var col = go.AddComponent<BoxCollider2D>();
@@ -447,7 +523,7 @@ public static partial class PlaceholderMapBuilder
     }
 
     /// Neviditelne steny okolo mapy, aby nikto nevysiel von.
-    static void BuildEdges(Transform root)
+    static void BuildEdges(Transform root, int w = Width, int h = Height)
     {
         var edges = Child(root, "MapEdges");
         void Wall(string name, Vector2 center, Vector2 size)
@@ -457,10 +533,10 @@ public static partial class PlaceholderMapBuilder
             go.transform.position = center;
             go.AddComponent<BoxCollider2D>().size = size;
         }
-        Wall("Left", new Vector2(-0.5f, Height / 2f), new Vector2(1, Height + 2));
-        Wall("Right", new Vector2(Width + 0.5f, Height / 2f), new Vector2(1, Height + 2));
-        Wall("Bottom", new Vector2(Width / 2f, -0.5f), new Vector2(Width + 2, 1));
-        Wall("Top", new Vector2(Width / 2f, Height + 0.5f), new Vector2(Width + 2, 1));
+        Wall("Left", new Vector2(-0.5f, h / 2f), new Vector2(1, h + 2));
+        Wall("Right", new Vector2(w + 0.5f, h / 2f), new Vector2(1, h + 2));
+        Wall("Bottom", new Vector2(w / 2f, -0.5f), new Vector2(w + 2, 1));
+        Wall("Top", new Vector2(w / 2f, h + 0.5f), new Vector2(w + 2, 1));
     }
 
     // ---------------------------------------------------------------- objekty
@@ -921,26 +997,56 @@ public static partial class PlaceholderMapBuilder
 
         public static Px CraftingTable()
         {
+            // y od 1: spodny riadok ostane na obrys, inak je spodok useknuty
             var px = new Px(32, 32);
-            px.Rect(3, 0, 5, 12, "5d3a24");
-            px.Rect(26, 0, 28, 12, "5d3a24");
-            px.Rect(1, 12, 30, 18, "8b5a2b");
-            px.Rect(1, 18, 30, 19, "c08552");
-            px.Rect(6, 20, 13, 21, "b8b8c0");  // pila
-            px.Rect(18, 20, 19, 25, "5d3a24"); // kladivo
-            px.Rect(16, 25, 21, 27, "7c7c88");
+            px.Rect(3, 1, 5, 13, "5d3a24");
+            px.Rect(26, 1, 28, 13, "5d3a24");
+            px.Rect(1, 13, 30, 19, "8b5a2b");
+            px.Rect(1, 19, 30, 20, "c08552");
+            px.Rect(6, 21, 13, 22, "b8b8c0");  // pila
+            px.Rect(18, 21, 19, 26, "5d3a24"); // kladivo
+            px.Rect(16, 26, 21, 28, "7c7c88");
             px.Outline();
             return px;
         }
 
         public static Px CookingPot()
         {
+            // y od 1: spodny riadok ostane na obrys, inak je spodok useknuty
             var px = new Px(16, 24);
-            px.Rect(3, 0, 12, 2, "5d3a24");     // drevo
-            px.Rect(5, 2, 10, 5, "e07b1f");     // ohen
-            px.Rect(7, 4, 8, 7, "f2a65a");
-            px.Ellipse(8, 11, 6.5f, 5, "4a4a55");
-            px.Rect(2, 14, 13, 15, "7c7c88");
+            px.Rect(3, 1, 12, 3, "5d3a24");     // drevo
+            px.Rect(5, 3, 10, 6, "e07b1f");     // ohen
+            px.Rect(7, 5, 8, 8, "f2a65a");
+            px.Ellipse(8, 12, 6.5f, 5, "4a4a55");
+            px.Rect(2, 15, 13, 16, "7c7c88");
+            px.Outline();
+            return px;
+        }
+
+        public static Px Mushroom()
+        {
+            var px = new Px(16, 16);
+            px.Rect(4, 1, 5, 4, "e8dcc8");          // maly hribik vlavo
+            px.Ellipse(4.5f, 5.5f, 3, 2, "c0392b");
+            px.Rect(9, 1, 11, 6, "e8dcc8");         // velky v strede
+            px.Ellipse(10, 8, 5, 3, "c0392b");
+            px.Rect(8, 9, 8, 9, "ffffff");          // bodky
+            px.Rect(11, 8, 11, 8, "ffffff");
+            px.Rect(3, 6, 3, 6, "ffffff");
+            px.Outline();
+            return px;
+        }
+
+        public static Px ScrapPile()
+        {
+            var px = new Px(16, 16);
+            px.Ellipse(8, 3.5f, 7, 3.5f, "5d4a3a");  // hlina pod tym
+            px.Rect(2, 3, 9, 6, "7c7c88");          // plech
+            px.Rect(3, 6, 8, 6, "b8b8c0");
+            px.Rect(9, 2, 13, 8, "8a5a3a");         // hrdzava tyc / kus stroja
+            px.Rect(10, 7, 12, 8, "c07a4a");
+            px.Rect(5, 7, 6, 10, "4a4a55");         // trubka
+            px.Rect(5, 10, 7, 10, "7c7c88");
             px.Outline();
             return px;
         }

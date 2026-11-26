@@ -16,6 +16,14 @@ public class CameraFollow : MonoBehaviour
         cam = GetComponent<Camera>();
     }
 
+    /// <summary>Nove hranice (napr. pri presune do inej lokacie). Kamera na ne skoci v najblizsom LateUpdate.</summary>
+    public void SetBounds(Vector2 min, Vector2 max)
+    {
+        clampToBounds = true;
+        boundsMin = min;
+        boundsMax = max;
+    }
+
     void LateUpdate()
     {
         if (target == null) return;

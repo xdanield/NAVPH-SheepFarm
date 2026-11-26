@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,9 +11,12 @@ using UnityEngine.Rendering.Universal;
 /// Baa-ricade > Nastavit osvetlenie
 ///     Prida do sceny Farm den/noc a teple svetla:
 ///     - objekt "Lighting" s Global Light 2D a DayNightLighting (farba a sila podla casu, nahlad slidrom),
-///     - svetla v oknach domu, lampas pri dverach, ohen pod hrncom, lampas hracovi,
-///     - Shadow Caster 2D na vsetko, co ma collider (stromy, kamene, dom, plot...), tien sa hadze od spodku objektu.
-///     Da sa spustit znova, stare svetla zmaze a postavi nanovo.
+///     - svetla v oknach domu, lampas pri dverach, ohen pod hrncom (hrac vlastne svetlo nema),
+///     - SpriteShadow (tien v tvare spritu od slnka aj lamp) na prefaby domu, plotov, stola, truhlice...
+///       aj na stromy/kriky/kamene z generatora mapy (namalovane tiene Props/shadows zmaze).
+///       Unity Shadow Caster 2D sa nepouziva, stare zo sceny zmaze.
+///     Da sa spustit znova, stare svetla zmaze a postavi nanovo. Vysledok ulozi ako prefab
+///     Assets/Prefabs/Map/Lighting.prefab (v scene je len instancia).
 ///
 /// LightingSetup.CapturePreview (len z prikazoveho riadku, batchmode)
 ///     Nastavi osvetlenie v pamati (scenu neulozi) a ulozi screenshoty pre rozne casy dna do -outDir.
@@ -27,12 +31,15 @@ public static class LightingSetup
     public static void SetupMenu()
     {
         Undo.SetCurrentGroupName("Nastavit osvetlenie");
+        int added = AddSpriteShadows();
+        if (added > 0) Debug.Log($"Osvetlenie: SpriteShadow pridany na {added} prefabov.");
         Setup();
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         Debug.Log("Osvetlenie hotove. Cas posuvas na objekte Lighting (Nahlad), v hre drz T na zrychlenie casu. Nezabudni ulozit scenu (Ctrl+S).");
     }
 
-    public static DayNightLighting Setup()
+    /// <param name="savePrefab">false = len v pamati (screenshoty v batchmode), Lighting.prefab sa neprepise.</param>
+    public static DayNightLighting Setup(bool savePrefab = true)
     {
         var scene = EditorSceneManager.GetActiveScene();
         foreach (var go in scene.GetRootGameObjects().Where(g => g.name == "Lighting")) Undo.DestroyObjectImmediate(go);
@@ -47,7 +54,7 @@ public static class LightingSetup
 
         var dn = root.AddComponent<DayNightLighting>();
         var so = new SerializedObject(dn);
-        so.FindProperty("cycle").objectReferenceValue = Object.FindAnyObjectByType<DayNightCycle>();
+        // cycle nenastavujeme: Lighting je prefab (nemoze odkazovat na scenu), DayNightLighting si ho najde v Awake.
         so.FindProperty("globalLight").objectReferenceValue = global;
         so.ApplyModifiedPropertiesWithoutUndo();
 
@@ -58,38 +65,40 @@ public static class LightingSetup
         {
             var h = house.transform.position;
             // Pozicie podla house.aseprite (pivot domu je dole v strede pri dverach).
-            Point(root, "Okno L", h + new Vector3(-1.95f, 1.65f), WindowColor, 1.8f, 1.3f, 0.05f, false);
-            Point(root, "Okno P", h + new Vector3(1.95f, 1.65f), WindowColor, 1.8f, 1.3f, 0.05f, false);
-            Point(root, "Okno strecha", h + new Vector3(0f, 3.75f), WindowColor, 1.1f, 1f, 0.05f, false);
-            Point(root, "Lampa nad dverami", h + new Vector3(0f, 1.6f), LanternColor, 6f, 1.2f, 0.08f, true);
+            Point(root, "Okno L", h + new Vector3(-1.95f, 1.65f), WindowColor, 1.8f, 1.3f, 0.05f);
+            Point(root, "Okno P", h + new Vector3(1.95f, 1.65f), WindowColor, 1.8f, 1.3f, 0.05f);
+            Point(root, "Okno strecha", h + new Vector3(0f, 3.75f), WindowColor, 1.1f, 1f, 0.05f);
+            Point(root, "Lampa nad dverami", h + new Vector3(0f, 1.6f), LanternColor, 6f, 1.2f, 0.08f);
         }
         var pot = Find(env, "CookingPot");
-        if (pot != null) Point(root, "Ohen pod hrncom", pot.transform.position + new Vector3(0, 0.3f), FireColor, 4.5f, 1.4f, 0.3f, true);
+        if (pot != null) Point(root, "Ohen pod hrncom", pot.transform.position + new Vector3(0, 0.3f), FireColor, 4.5f, 1.4f, 0.3f);
 
-        // Lampas hraca (dieta hraca, aby chodil s nim).
+        // Hrac nema vlastne svetlo (v noci je tma, svieti len dom a ohen). Stary lampas zo skorsej verzie zmaze.
         var player = GameObject.FindWithTag("Player");
         if (player != null)
-        {
             foreach (Transform t in player.transform.Cast<Transform>().Where(t => t.name == "Lampas").ToArray())
                 Undo.DestroyObjectImmediate(t.gameObject);
-            var l = Point(root, "Lampas", player.transform.position + new Vector3(0, 0.5f), LanternColor, 3.5f, 0.8f, 0.06f, true);
-            Undo.SetTransformParent(l.transform, player.transform, "Lampas");
-        }
 
-        // ---- tiene
-        int casters = 0;
-        if (env != null)
-            foreach (var box in env.GetComponentsInChildren<BoxCollider2D>(true))
-                if (!box.isTrigger && box.GetComponent<SpriteRenderer>() != null) { ShadowCaster(box); casters++; }
+        // ---- tiene: robi ich SpriteShadow na prefaboch. Stare Shadow Caster 2D zo sceny zmazeme.
+        int removed = 0;
+        foreach (var sc in Object.FindObjectsByType<ShadowCaster2D>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (PrefabUtility.IsPartOfPrefabInstance(sc)) continue; // v prefabe mapy uz nie su (stara scena)
+            Undo.DestroyObjectImmediate(sc);
+            removed++;
+        }
+        if (removed > 0) Debug.Log($"Osvetlenie: zmazanych {removed} Shadow Caster 2D (tiene teraz robi SpriteShadow).");
+        FixSceneProps(scene);
 
         dn.SetNight(0f);
-        Debug.Log($"Osvetlenie: {casters} objektov hadze tien.");
+        // Az po SetNight: prefab ma farby svetiel ako cez den (preview = 0), takze v scene nevzniknu overrides.
+        if (savePrefab) PlaceholderMapBuilder.SaveAsMapPrefab(root, PlaceholderMapBuilder.LightingPrefab);
         return dn;
     }
 
     // ---------------------------------------------------------------- stavanie
 
-    static GameObject Point(GameObject root, string name, Vector3 pos, Color color, float radius, float intensity, float flicker, bool shadows)
+    static GameObject Point(GameObject root, string name, Vector3 pos, Color color, float radius, float intensity, float flicker)
     {
         var go = new GameObject(name);
         go.transform.SetParent(root.transform, false);
@@ -100,9 +109,7 @@ public static class LightingSetup
         light.pointLightInnerRadius = 0f;
         light.pointLightOuterRadius = radius;
         light.falloffIntensity = 0.65f;
-        light.shadowsEnabled = shadows;
-        light.shadowIntensity = 0.8f;
-        light.shadowSoftness = 0.25f;
+        light.shadowsEnabled = false; // tiene robi SpriteShadow, nie Unity Shadow Caster 2D
         AllLayers(light);
 
         var warm = go.AddComponent<WarmLight>();
@@ -113,34 +120,83 @@ public static class LightingSetup
         return go;
     }
 
-    /// Tien sa hadze od obrysu collidera (spodok objektu), nie od celeho spritu, lebo pozerame zhora.
-    static void ShadowCaster(BoxCollider2D box)
+    // Prefaby, ktore dostanu SpriteShadow (postavy, stromy, kamene a kriky ho uz maju).
+    // noonRing = kruzok pod objektom len na poludnie, ked vrhany tien zmizne (cez den by bol druhy tien navyse).
+    // Dom a ploty ho nemaju vobec, pod nimi by vyzeral divne.
+    static readonly (string name, bool noonRing, int maxShadows)[] ShadowPrefabs =
     {
-        var go = box.gameObject;
-        var sc = go.GetComponent<ShadowCaster2D>();
-        if (sc == null) sc = Undo.AddComponent<ShadowCaster2D>(go);
-        sc.castingOption = ShadowCaster2D.ShadowCastingOptions.CastShadow;
+        ("House", false, 2), ("Chest", true, 2), ("CraftingTable", true, 2), ("CookingPot", true, 2),
+        ("ScrapPile", true, 2), ("Mushroom", true, 1), ("GrassTuft", false, 1), ("Spikes", false, 1), ("Fence", false, 2),
+        ("PenFence_H", false, 2), ("PenFence_V", false, 2), ("PenFence_H_Rail", false, 2), ("PenFence_V_Rail", false, 2),
+        ("PenFence_Corner_BL", false, 2), ("PenFence_Corner_BR", false, 2), ("PenFence_Corner_TL", false, 2), ("PenFence_Corner_TR", false, 2),
+    };
 
-        Vector2 o = box.offset, e = box.size * 0.5f;
-        var corners = new[]
+    /// Prida SpriteShadow na prefaby zo zoznamu. Existujuci nemeni (tvoje upravy v Inspectore ostanu).
+    static int AddSpriteShadows()
+    {
+        int added = 0;
+        foreach (var (name, noonRing, maxShadows) in ShadowPrefabs)
         {
-            new Vector3(o.x - e.x, o.y - e.y), new Vector3(o.x + e.x, o.y - e.y),
-            new Vector3(o.x + e.x, o.y + e.y), new Vector3(o.x - e.x, o.y + e.y),
-        };
+            string path = $"Assets/Prefabs/Environment/{name}.prefab";
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (asset == null || asset.GetComponent<SpriteShadow>() != null || asset.GetComponent<SpriteRenderer>() == null) continue;
 
-        var so = new SerializedObject(sc);
-        so.FindProperty("m_ShadowCastingSource").intValue = 1; // ShapeEditor
-        var path = so.FindProperty("m_ShapePath");
-        path.arraySize = corners.Length;
-        for (int i = 0; i < corners.Length; i++) path.GetArrayElementAtIndex(i).vector3Value = corners[i];
-        int hash = 17;
-        foreach (var c in corners) hash = hash * 31 + c.GetHashCode();
-        so.FindProperty("m_ShapePathHash").intValue = hash == 0 ? 1 : hash;
-        var layers = so.FindProperty("m_ApplyToSortingLayers");
-        var ids = SortingLayer.layers.Select(l => l.id).ToArray();
-        layers.arraySize = ids.Length;
-        for (int i = 0; i < ids.Length; i++) layers.GetArrayElementAtIndex(i).intValue = ids[i];
-        so.ApplyModifiedProperties();
+            using (var scope = new PrefabUtility.EditPrefabContentsScope(path))
+            {
+                Configure(scope.prefabContentsRoot.AddComponent<SpriteShadow>(), noonRing, maxShadows);
+            }
+            added++;
+        }
+        return added;
+    }
+
+    static void Configure(SpriteShadow shadow, bool noonRing, int maxShadows)
+    {
+        var so = new SerializedObject(shadow);
+        so.FindProperty("contactShadow").boolValue = noonRing;
+        so.FindProperty("contactAlpha").floatValue = 0f; // cez den bez kruzku, len na poludnie (noonContactAlpha)
+        so.FindProperty("maxShadows").intValue = maxShadows;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    // Dekoracie z generatora mapy (Props/*.aseprite, nie su to prefaby), podla mena spritu.
+    // Ploche veci na zemi (kvety, klicky, pebbles - Tiles/Decor) tien nemaju.
+    static readonly Dictionary<string, (bool noonRing, int maxShadows)> PropShadows = new Dictionary<string, (bool, int)>
+    {
+        ["trees_pine"] = (true, 2), ["trees_round"] = (true, 2), ["trees_tall"] = (true, 2),
+        ["bushes"] = (true, 2), ["rocks"] = (true, 2), ["stumps"] = (true, 1),
+        ["rocks_small"] = (false, 1), ["foxgloves"] = (false, 1),
+    };
+
+    /// Namalovane tiene pod stromami (Props/shadows) - nahradil ich SpriteShadow.
+    public const string BakedShadowSprite = "Props/shadows";
+
+    /// Ak dekoracia (strom, ker, kamen...) ma mat tien, prida jej SpriteShadow. Vola aj generator mapy.
+    public static bool AddPropShadow(GameObject go, string spriteName)
+    {
+        if (!PropShadows.TryGetValue(spriteName, out var cfg) || go.GetComponent<SpriteShadow>() != null) return false;
+        Configure(Undo.AddComponent<SpriteShadow>(go), cfg.noonRing, cfg.maxShadows); // Undo: Ctrl+Z vrati aj toto
+        return true;
+    }
+
+    /// Dekoracie v starej scene (mapa este nie je prefab): zmaze namalovane tiene, ostatnym prida SpriteShadow.
+    /// Mapa v prefabe ich uz ma z generatora, tam sa nic nemeni.
+    static void FixSceneProps(UnityEngine.SceneManagement.Scene scene)
+    {
+        int removed = 0, added = 0;
+        foreach (var root in scene.GetRootGameObjects())
+        foreach (var props in root.GetComponentsInChildren<Transform>(true)
+                     .Where(t => t.name == "Props" && !PrefabUtility.IsPartOfPrefabInstance(t)).ToArray())
+        foreach (Transform t in props.Cast<Transform>().ToArray())
+        {
+            if (t.name == Path.GetFileName(BakedShadowSprite)) { Undo.DestroyObjectImmediate(t.gameObject); removed++; }
+            else if (PropShadows.ContainsKey(t.name) && t.GetComponent<SpriteShadow>() == null)
+            {
+                if (AddPropShadow(t.gameObject, t.name)) added++;
+            }
+        }
+        if (removed + added > 0)
+            Debug.Log($"Osvetlenie: zmazanych {removed} namalovanych tienov, SpriteShadow pridany na {added} dekoracii.");
     }
 
     static void AllLayers(Light2D light) => light.targetSortingLayers = SortingLayer.layers.Select(l => l.id).ToArray();
@@ -161,7 +217,7 @@ public static class LightingSetup
         try
         {
             EditorSceneManager.OpenScene("Assets/Scenes/Farm.unity", OpenSceneMode.Single);
-            var dn = Setup();
+            var dn = Setup(savePrefab: false);
 
             var cam = Camera.main;
             var ppc = cam.GetComponent<PixelPerfectCamera>();
@@ -179,7 +235,6 @@ public static class LightingSetup
             };
             var times = new (string name, float night)[] { ("1_den", 0f), ("2_podvecer", 0.3f), ("3_zapad", 0.5f), ("4_sumrak", 0.75f), ("5_noc", 1f) };
 
-            var update = typeof(ShadowCaster2D).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             var lightUpdate = typeof(Light2D).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
             foreach (var (shot, pos) in shots)
             {
@@ -189,8 +244,7 @@ public static class LightingSetup
                 foreach (var (time, night) in times)
                 {
                     dn.SetNight(night);
-                    // V batchmode nebezi Update/LateUpdate, svetla a tiene si mesh postavia az takto.
-                    foreach (var sc in Object.FindObjectsByType<ShadowCaster2D>(FindObjectsSortMode.None)) update?.Invoke(sc, null);
+                    // V batchmode nebezi LateUpdate, svetla si mesh postavia az takto.
                     foreach (var l in Object.FindObjectsByType<Light2D>(FindObjectsSortMode.None)) lightUpdate?.Invoke(l, null);
                     Save(cam, Path.Combine(outDir, $"{shot}_{time}.png"), 4);
                 }

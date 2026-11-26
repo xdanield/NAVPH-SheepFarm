@@ -40,6 +40,9 @@ public static partial class PlaceholderMapBuilder
         new GatherDef { Prefab = "GrassTuft", Item = "fiber", Action = "Cut grass", Min = 1, Max = 2, Time = 0.6f, RegrowDays = 1 },
         new GatherDef { Prefab = "BerryBush", Item = "berries", Action = "Pick berries", Min = 2, Max = 3, Time = 0.8f,
                         DepletedFrame = 1, DepletedPaint = Px.BerryBushEmpty, BlockWhenDepleted = true, RegrowDays = 2 },
+        // Explore: huby v lese, srot v ruinach (vzacny, daleko od farmy, dlho sa obnovuje)
+        new GatherDef { Prefab = "Mushroom", Item = "mushroom", Action = "Pick mushrooms", Min = 1, Max = 2, Time = 0.5f, RegrowDays = 2 },
+        new GatherDef { Prefab = "ScrapPile", Item = "scrap", Action = "Search scrap", Min = 1, Max = 2, Time = 2.5f, RegrowDays = 5 },
     };
 
     static Dictionary<string, ItemData> gatherItems;
