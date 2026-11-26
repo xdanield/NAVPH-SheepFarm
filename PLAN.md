@@ -24,7 +24,7 @@ Hrateľné jadro hry. Stačí placeholder grafika. Poradie je zhruba také, v ak
 - [x] **P1-06 Ohrada s HP** – 200 HP, zombie do nej búchajú po 10
 - [ ] **P1-07 Odnášanie oviec** – 2 zombie pri ovci ju odnesú (stačí, že zmiznú)
 - [ ] **P1-08 Noc vo vlnách** – 2–3 vlny; 10 zombie, +2 každú noc, +1 za každých 10 oviec nad 10; noc končí, keď zombie zmiznú, nie časovačom
-- [ ] **P1-09 Zber surovín** – stromy, kamene, tráva cez E (drevo, kameň, vlákno)
+- [x] **P1-09 Zber surovín** – stromy, kamene, tráva cez E (drevo, kameň, vlákno)
 - [ ] **P1-10 Batoh a sklad** – hotbar 6 slotov + inventár na I ako v Core Keeper (hotové), truhla na farme bez limitu (chýba)
 - [ ] **P1-11 Stavanie obrany** – Q, mriežka; plot (2 drevo, 20 HP), bodce (2 drevo + 1 kameň, 15 dmg/s); odstránenie
 - [ ] **P1-12 Ráno** – každý pár má 60 % šancu na jahňa; zhrnutie prežilo / odnesené / narodené
